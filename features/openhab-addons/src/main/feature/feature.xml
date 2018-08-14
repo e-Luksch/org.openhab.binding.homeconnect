@@ -183,6 +183,11 @@
         <bundle start-level="80">mvn:org.openhab.binding/org.openhab.binding.helios/${project.version}</bundle>
     </feature>
 
+    <feature name="openhab-binding-homeconnect" description="Home Connect Binding" version="${project.version}">
+        <feature>openhab-runtime-base</feature>
+        <bundle start-level="80">mvn:org.openhab.binding/org.openhab.binding.homeconnect/${project.version}</bundle>
+    </feature>
+
     <feature name="openhab-binding-neato" description="Neato Binding" version="${project.version}">
         <feature>openhab-runtime-base</feature>
         <bundle start-level="80">mvn:org.openhab.binding/org.openhab.binding.neato/${project.version}</bundle>

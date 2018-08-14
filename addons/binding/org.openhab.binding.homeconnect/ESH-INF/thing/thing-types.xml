@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="homeconnect"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
+
+
+	<!-- Home Connect API Bridge -->
+	<bridge-type id="api_bridge">
+		<label>Home Connect API</label>
+		<description>This bridge represents the gateway to the Home Connect API.</description>
+		<config-description>
+			<parameter name="clientId" type="text" required="true">
+				<label>Client id</label>
+				<description>Application client id</description>
+			</parameter>
+			<parameter name="simulator" type="boolean" required="true">
+                <label>Simulator</label>
+                <description>Use simulated environment at https://developer.home-connect.com/simulator/</description>
+                <default>false</default>
+            </parameter>
+			<parameter name="clientSecret" type="text" required="false">
+				<label>Client secret</label>
+				<description>Application client secret (required for physical home appliances)</description>
+			</parameter>
+			<parameter name="refreshToken" type="text" required="false">
+				<label>Refresh token</label>
+				<description>oAuth refresh token (required for physical home appliances)</description>
+			</parameter>
+		</config-description>
+	</bridge-type>
+
+	<!-- Dishwasher -->
+	<thing-type id="dishwasher">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="api_bridge" />
+		</supported-bridge-type-refs>
+		<label>Dishwasher</label>
+		<description>Home Connect connected dishwasher (Bosch or Siemens).</description>
+		<channels>
+			<channel id="dishwasher_power_state" typeId="power_state" />
+            <channel id="dishwasher_door_state" typeId="door_state" />
+            <channel id="dishwasher_operation_state" typeId="operation_state" />
+            <channel id="dishwasher_remote_start_allowance_state" typeId="remote_start_allowance_state" />
+            <channel id="dishwasher_remote_control_active_state" typeId="remote_control_active_state" />
+            <channel id="dishwasher_active_program_state" typeId="active_program_state" />
+            <channel id="dishwasher_remaining_program_time_state" typeId="remaining_program_time_state" />
+            <channel id="dishwasher_program_progress_state" typeId="program_progress_state" />
+		</channels>
+		<config-description>
+			<parameter name="haId" type="text" required="true">
+				<label>haId</label>
+				<description>Unique identifier representing a specific home appliance.</description>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<!-- Channel types -->
+	<channel-type id="power_state">
+		<item-type>Switch</item-type>
+		<label>Power State</label>
+		<description>This setting describes the current power state of the home appliance.</description>
+	</channel-type>
+	<channel-type id="door_state">
+		<item-type>Contact</item-type>
+		<label>Door State</label>
+		<description>This status describes the state of the door of the home appliance. A change of that status is either triggered by the user operating the home appliance locally (i.e. opening/closing door) or automatically by the home appliance (i.e. locking the door).</description>
+	    <state readOnly="true" />
+	</channel-type>
+	<channel-type id="operation_state">
+        <item-type>String</item-type>
+        <label>Operation State</label>
+        <description>This status describes the operation state of the home appliance.</description>
+        <state readOnly="true" />
+    </channel-type>
+    <channel-type id="remote_start_allowance_state">
+        <item-type>Switch</item-type>
+        <label>Remote Start Allowance State</label>
+        <description>This status indicates whether the remote program start is enabled. This can happen due to a programmatic change (only disabling), or manually by the user changing the flag locally on the home appliance, or automatically after a certain duration - usually 24 hours.</description>
+        <state readOnly="true" />
+    </channel-type>    
+    <channel-type id="remote_control_active_state">
+        <item-type>Switch</item-type>
+        <label>Remote Control Activation State</label>
+        <description>This status indicates whether the allowance for remote controlling is enabled.</description>
+        <state readOnly="true" />
+    </channel-type>        
+    <channel-type id="active_program_state">
+        <item-type>String</item-type>
+        <label>Active Program</label>
+        <description>This status describes the active program of the home appliance.</description>
+        <state readOnly="true" />
+    </channel-type>
+        <channel-type id="remaining_program_time_state">
+        <item-type>Number</item-type>
+        <label>Remaining program time</label>
+        <description>This status indicates the remaining program time of the home appliance.</description>
+        <state pattern="%d s" readOnly="true"></state>
+    </channel-type>
+        <channel-type id="program_progress_state">
+        <item-type>Number</item-type>
+        <label>Progress State</label>
+        <description>This status describes the program progress of the home appliance.</description>
+        <state pattern="%d%%" readOnly="true"></state>
+    </channel-type>    
+    
+
+</thing:thing-descriptions>
