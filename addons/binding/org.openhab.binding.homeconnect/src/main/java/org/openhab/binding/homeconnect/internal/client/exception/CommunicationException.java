@@ -9,6 +9,7 @@
 package org.openhab.binding.homeconnect.internal.client.exception;
 
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * API communication exception
@@ -33,7 +34,8 @@ public class CommunicationException extends Exception {
     }
 
     public CommunicationException(int code, String message, String body) throws IOException {
-        super(String.format("Communication error! response code: %d, message: %s, body: %s", code, message, body));
+        super(String.format("Communication error! response code: %d, message: %s, body: %s (Tried at %s)", code,
+                message, body, new Date()));
     }
 
 }

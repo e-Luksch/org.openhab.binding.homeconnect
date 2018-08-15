@@ -8,6 +8,10 @@
  */
 package org.openhab.binding.homeconnect.handler;
 
+import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.thing.Bridge;
@@ -34,6 +38,10 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class HomeConnectBridgeHandler extends BaseBridgeHandler {
 
+    private static final int REINITIALIZATION_LONG_DELAY = 120;
+    private static final int REINITIALIZATION_MEDIUM_DELAY = 30;
+    private static final int REINITIALIZATION_SHORT_DELAY = 5;
+
     private final Logger logger = LoggerFactory.getLogger(HomeConnectBridgeHandler.class);
 
     @Nullable
@@ -41,6 +49,9 @@ public class HomeConnectBridgeHandler extends BaseBridgeHandler {
 
     @Nullable
     private ApiBridgeConfiguration config;
+
+    @Nullable
+    private ScheduledFuture<?> reinitializationFuture;
 
     public HomeConnectBridgeHandler(Bridge bridge) {
         super(bridge);
@@ -68,11 +79,14 @@ public class HomeConnectBridgeHandler extends BaseBridgeHandler {
             } else {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
                         "Token seems to be not valid!");
+                scheduleReinitialize(REINITIALIZATION_LONG_DELAY);
             }
         } catch (ConfigurationException e) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, e.getMessage());
+            scheduleReinitialize(REINITIALIZATION_LONG_DELAY);
         } catch (CommunicationException e) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
+            scheduleReinitialize(REINITIALIZATION_MEDIUM_DELAY);
         }
     }
 
@@ -86,4 +100,39 @@ public class HomeConnectBridgeHandler extends BaseBridgeHandler {
     @Override
     public void childHandlerDisposed(ThingHandler childHandler, Thing childThing) {
     }
+
+    @SuppressWarnings("null")
+    @Override
+    public void dispose() {
+        if (reinitializationFuture != null && !reinitializationFuture.isDone()) {
+            reinitializationFuture.cancel(true);
+        }
+    }
+
+    @SuppressWarnings("null")
+    private synchronized void scheduleReinitialize(int seconds) {
+        if (reinitializationFuture != null && !reinitializationFuture.isDone()) {
+            logger.debug("Reinitialization is already scheduled. Starting in {} seconds.",
+                    reinitializationFuture.getDelay(TimeUnit.SECONDS));
+        } else {
+            reinitializationFuture = scheduler.schedule(() -> {
+
+                scheduler.schedule(() -> {
+                    initialize();
+                    if (ThingStatus.ONLINE.equals(getThing().getStatus())) {
+                        logger.debug("Refresh client handlers.");
+                        List<Thing> children = getThing().getThings();
+                        for (Thing thing : children) {
+                            ThingHandler childHandler = thing.getHandler();
+                            if (childHandler instanceof HomeConnectApiClientListener && apiClient != null) {
+                                ((HomeConnectApiClientListener) childHandler).refreshClient(apiClient);
+                            }
+                        }
+                    }
+                }, REINITIALIZATION_SHORT_DELAY, TimeUnit.SECONDS);
+
+            }, seconds, TimeUnit.SECONDS);
+        }
+    }
+
 }
