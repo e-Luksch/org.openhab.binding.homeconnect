@@ -31,6 +31,7 @@ import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.homeconnect.internal.client.HomeConnectApiClient;
+import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.client.listener.ServerSentEventListener;
 import org.openhab.binding.homeconnect.internal.client.model.Data;
@@ -83,13 +84,20 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
             // refresh channel
             updateChannel(channelUID);
         } else if (command instanceof OnOffType && channelUID.getId().equals(CHANNEL_DISHWASHER_POWER_STATE)) {
-            // turn dishwasher on and off
-            apiClient.setPowerState(getThingHaId(), OnOffType.ON.equals(command) ? STATE_POWER_ON : STATE_POWER_OFF);
+
+            try {
+                // turn dishwasher on and off
+                apiClient.setPowerState(getThingHaId(),
+                        OnOffType.ON.equals(command) ? STATE_POWER_ON : STATE_POWER_OFF);
+            } catch (ConfigurationException | CommunicationException e) {
+                logger.error("API communication problem!", e);
+            }
             // update channel state via API (if the device is running you're not allowed to turn off the device)
             updateChannel(channelUID);
         } else {
             logger.debug("Unhandeled command: {} for channel: {}", command, channelUID);
         }
+
     }
 
     @Override
@@ -167,8 +175,16 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
                 updateChannels();
             }
         };
-        apiClient.registerEventListener(serverSentEventListener);
-        refreshConnectionStatus();
+        try {
+            apiClient.registerEventListener(serverSentEventListener);
+            refreshConnectionStatus();
+            if (ThingStatus.ONLINE.equals(getThing().getStatus())) {
+                updateChannels();
+            }
+        } catch (ConfigurationException | CommunicationException e) {
+            logger.error("API communication problem!", e);
+        }
+
     }
 
     @Override
@@ -180,6 +196,7 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
 
     /**
      * Update all channels via API.
+     *
      */
     private void updateChannels() {
         List<Channel> channels = getThing().getChannels();
@@ -201,20 +218,24 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
             return;
         }
 
-        if (channelUID.getId().equals(CHANNEL_DISHWASHER_OPERATION_STATE)) {
-            updateState(channelUID, createState(channelUID, apiClient.getOperationState(getThingHaId())));
-        } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_DOOR_STATE)) {
-            updateState(channelUID, createState(channelUID, apiClient.getDoorState(getThingHaId())));
-        } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_POWER_STATE)) {
-            updateState(channelUID, createState(channelUID, apiClient.getPowerState(getThingHaId())));
-        } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_REMOTE_START_ALLOWANCE_STATE)) {
-            updateState(channelUID, createState(channelUID, apiClient.isRemoteControlStartAllowed(getThingHaId())));
-        } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_REMOTE_CONTROL_ACTIVE_STATE)) {
-            updateState(channelUID, createState(channelUID, apiClient.isRemoteControlActive(getThingHaId())));
-        } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_ACTIVE_PROGRAM_STATE)
-                || channelUID.getId().equals(CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE)
-                || channelUID.getId().equals(CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE)) {
-            updateState(channelUID, createState(channelUID, apiClient.getActiveProgram(getThingHaId())));
+        try {
+            if (channelUID.getId().equals(CHANNEL_DISHWASHER_OPERATION_STATE)) {
+                updateState(channelUID, createState(channelUID, apiClient.getOperationState(getThingHaId())));
+            } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_DOOR_STATE)) {
+                updateState(channelUID, createState(channelUID, apiClient.getDoorState(getThingHaId())));
+            } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_POWER_STATE)) {
+                updateState(channelUID, createState(channelUID, apiClient.getPowerState(getThingHaId())));
+            } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_REMOTE_START_ALLOWANCE_STATE)) {
+                updateState(channelUID, createState(channelUID, apiClient.isRemoteControlStartAllowed(getThingHaId())));
+            } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_REMOTE_CONTROL_ACTIVE_STATE)) {
+                updateState(channelUID, createState(channelUID, apiClient.isRemoteControlActive(getThingHaId())));
+            } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_ACTIVE_PROGRAM_STATE)
+                    || channelUID.getId().equals(CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE)
+                    || channelUID.getId().equals(CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE)) {
+                updateState(channelUID, createState(channelUID, apiClient.getActiveProgram(getThingHaId())));
+            }
+        } catch (ConfigurationException | CommunicationException e) {
+            logger.error("API communication problem!", e);
         }
     }
 
@@ -342,6 +363,8 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
                 }
             } catch (ConfigurationException e) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR);
+            } catch (CommunicationException e) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
             }
         } else {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_UNINITIALIZED);

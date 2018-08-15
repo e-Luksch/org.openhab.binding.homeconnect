@@ -8,6 +8,7 @@
  */
 package org.openhab.binding.homeconnect.internal.client;
 
+import static java.net.HttpURLConnection.*;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.openhab.binding.homeconnect.handler.HomeConnectBridgeHandler;
+import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.client.listener.ServerSentEventListener;
 import org.openhab.binding.homeconnect.internal.client.model.Data;
@@ -51,8 +53,13 @@ public class HomeConnectApiClient {
     private final static String API_SIMULATOR_URL = "https://simulator.home-connect.com";
     private final static String ACCEPT = "Accept";
     private final static String BSH_JSON_V1 = "application/vnd.bsh.sdk.v1+json";
-    private final static int STATUS_200 = 200;
     private final static String KEEP_ALIVE = "KEEP-ALIVE";
+    private final static String AUTH_DEFAULT_REDIRECT_URL = "https://apiclient.home-connect.com/o2c.html";
+    private final static String AUTH_URI_PATH = "/security/oauth/authorize";
+    private final static String AUTH_CLIENT_ID = "client_id";
+    private final static String AUTH_REDIRECT_URI = "redirect_uri";
+    private final static String AUTH_SCOPE = "scope";
+    private final static String AUTH_CODE_GRAND_SCOPE_VALUE = "IdentifyAppliance Monitor Settings";
 
     private final Logger logger = LoggerFactory.getLogger(HomeConnectBridgeHandler.class);
     private OkHttpClient client;
@@ -90,8 +97,9 @@ public class HomeConnectApiClient {
      *
      * @return list of {@link HomeAppliance} or null in case of communication error
      * @throws ConfigurationException
+     * @throws CommunicationException
      */
-    public List<HomeAppliance> getHomeAppliances() throws ConfigurationException {
+    public List<HomeAppliance> getHomeAppliances() throws ConfigurationException, CommunicationException {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + "/api/homeappliances").header(ACCEPT, BSH_JSON_V1).get()
@@ -102,7 +110,7 @@ public class HomeConnectApiClient {
             String body = response.body().string();
             logger.debug("[getHomeAppliances()] Response code: {}, body: {}", response.code(), body);
 
-            if (response.code() == STATUS_200) {
+            if (response.code() == HTTP_OK) {
                 return mapToHomeAppliances(body);
             }
         } catch (IOException e) {
@@ -118,8 +126,9 @@ public class HomeConnectApiClient {
      * @param haId home appliance id
      * @return {@link HomeAppliance} or null in case of communication error
      * @throws ConfigurationException
+     * @throws CommunicationException
      */
-    public HomeAppliance getHomeAppliance(String haId) throws ConfigurationException {
+    public HomeAppliance getHomeAppliance(String haId) throws ConfigurationException, CommunicationException {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + "/api/homeappliances/" + haId).header(ACCEPT, BSH_JSON_V1)
@@ -130,7 +139,7 @@ public class HomeConnectApiClient {
             String body = response.body().string();
             logger.debug("[getHomeAppliance({})] Response code: {}, body: {}", haId, response.code(), body);
 
-            if (response.code() == STATUS_200) {
+            if (response.code() == HTTP_OK) {
                 return mapToHomeAppliance(body);
             }
         } catch (IOException e) {
@@ -145,8 +154,10 @@ public class HomeConnectApiClient {
      *
      * @param haId home appliance id
      * @return {@link Data} or null in case of communication error
+     * @throws CommunicationException
+     * @throws ConfigurationException
      */
-    public Data getPowerState(String haId) {
+    public Data getPowerState(String haId) throws ConfigurationException, CommunicationException {
         return getSetting(haId, "BSH.Common.Setting.PowerState");
     }
 
@@ -155,8 +166,10 @@ public class HomeConnectApiClient {
      *
      * @param haId  home appliance id
      * @param state target state
+     * @throws CommunicationException
+     * @throws ConfigurationException
      */
-    public void setPowerState(String haId, String state) {
+    public void setPowerState(String haId, String state) throws ConfigurationException, CommunicationException {
         putSettings(haId, new Data("BSH.Common.Setting.PowerState", state));
     }
 
@@ -165,8 +178,10 @@ public class HomeConnectApiClient {
      *
      * @param haId home appliance id
      * @return {@link Data} or null in case of communication error
+     * @throws CommunicationException
+     * @throws ConfigurationException
      */
-    public Data getDoorState(String haId) {
+    public Data getDoorState(String haId) throws ConfigurationException, CommunicationException {
         return getStatus(haId, "BSH.Common.Status.DoorState");
     }
 
@@ -175,8 +190,10 @@ public class HomeConnectApiClient {
      *
      * @param haId home appliance id
      * @return {@link Data} or null in case of communication error
+     * @throws CommunicationException
+     * @throws ConfigurationException
      */
-    public Data getOperationState(String haId) {
+    public Data getOperationState(String haId) throws ConfigurationException, CommunicationException {
         return getStatus(haId, "BSH.Common.Status.OperationState");
     }
 
@@ -185,8 +202,10 @@ public class HomeConnectApiClient {
      *
      * @param haId haId home appliance id
      * @return
+     * @throws CommunicationException
+     * @throws ConfigurationException
      */
-    public boolean isRemoteControlStartAllowed(String haId) {
+    public boolean isRemoteControlStartAllowed(String haId) throws ConfigurationException, CommunicationException {
         Data data = getStatus(haId, "BSH.Common.Status.RemoteControlStartAllowed");
         return data != null && "true".equalsIgnoreCase(data.getValue());
     }
@@ -196,8 +215,10 @@ public class HomeConnectApiClient {
      *
      * @param haId haId home appliance id
      * @return
+     * @throws CommunicationException
+     * @throws ConfigurationException
      */
-    public boolean isRemoteControlActive(String haId) {
+    public boolean isRemoteControlActive(String haId) throws ConfigurationException, CommunicationException {
         Data data = getStatus(haId, "BSH.Common.Status.RemoteControlActive");
         return data != null && "true".equalsIgnoreCase(data.getValue());
     }
@@ -207,8 +228,10 @@ public class HomeConnectApiClient {
      *
      * @param haId home appliance id
      * @return {@link Data} or null in case of communication error or if there is no active program
+     * @throws CommunicationException
+     * @throws ConfigurationException
      */
-    public Program getActiveProgram(String haId) {
+    public Program getActiveProgram(String haId) throws ConfigurationException, CommunicationException {
         return getProgram(haId, "/api/homeappliances/" + haId + "/programs/active");
     }
 
@@ -219,13 +242,17 @@ public class HomeConnectApiClient {
      * Checkout rate limits of the API at. https://developer.home-connect.com/docs/general/ratelimiting
      *
      * @param eventListener
+     * @throws CommunicationException
+     * @throws ConfigurationException
      */
-    public synchronized void registerEventListener(ServerSentEventListener eventListener) {
+    public synchronized void registerEventListener(ServerSentEventListener eventListener)
+            throws ConfigurationException, CommunicationException {
         String haId = eventListener.haId();
 
         eventListeners.add(eventListener);
 
         if (!serverSentEvent.containsKey(haId)) {
+            checkCredentials();
             Request request = new Request.Builder().url(apiUrl + "/api/homeappliances/" + haId + "/events")
                     .addHeader("Authorization", "Bearer " + token).build();
 
@@ -240,7 +267,7 @@ public class HomeConnectApiClient {
                 public void onMessage(ServerSentEvent sse, String id, String event, String message) {
                     if (logger.isDebugEnabled()) {
                         if (KEEP_ALIVE.equals(event)) {
-                            logger.debug("[{}] SSE KEEP-ALIVE");
+                            logger.debug("[{}] SSE KEEP-ALIVE", haId);
                         } else {
                             logger.debug("[{}] SSE received id: {} event: {} message:{}", haId, id, event, message);
                         }
@@ -322,19 +349,21 @@ public class HomeConnectApiClient {
         eventListeners.clear();
     }
 
-    private Data getSetting(String haId, String setting) {
+    private Data getSetting(String haId, String setting) throws ConfigurationException, CommunicationException {
         return getData(haId, "/api/homeappliances/" + haId + "/settings/" + setting);
     }
 
-    private void putSettings(String haId, Data data) {
+    private void putSettings(String haId, Data data) throws ConfigurationException, CommunicationException {
         putData(haId, "/api/homeappliances/" + haId + "/settings/" + data.getName(), data);
     }
 
-    private Data getStatus(String haId, String status) {
+    private Data getStatus(String haId, String status) throws ConfigurationException, CommunicationException {
         return getData(haId, "/api/homeappliances/" + haId + "/status/" + status);
     }
 
-    private Program getProgram(String haId, String path) {
+    private Program getProgram(String haId, String path) throws ConfigurationException, CommunicationException {
+        checkCredentials();
+
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).get()
                 .addHeader("Authorization", "Bearer " + token).build();
 
@@ -343,7 +372,7 @@ public class HomeConnectApiClient {
             String body = response.body().string();
             logger.debug("[getProgram({}, {})] Response code: {}, body: {}", haId, path, response.code(), body);
 
-            if (response.code() == STATUS_200) {
+            if (response.code() == HTTP_OK) {
                 return mapToProgram(body);
             }
         } catch (IOException e) {
@@ -353,7 +382,9 @@ public class HomeConnectApiClient {
         return null;
     }
 
-    private Data getData(String haId, String path) {
+    private Data getData(String haId, String path) throws ConfigurationException, CommunicationException {
+        checkCredentials();
+
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).get()
                 .addHeader("Authorization", "Bearer " + token).build();
 
@@ -362,7 +393,7 @@ public class HomeConnectApiClient {
             String body = response.body().string();
             logger.debug("[getData({}, {})] Response code: {}, body: {}", haId, path, response.code(), body);
 
-            if (response.code() == STATUS_200) {
+            if (response.code() == HTTP_OK) {
                 return mapToState(body);
             }
         } catch (IOException e) {
@@ -372,7 +403,7 @@ public class HomeConnectApiClient {
         return null;
     }
 
-    private void putData(String haId, String path, Data data) {
+    private void putData(String haId, String path, Data data) throws ConfigurationException, CommunicationException {
         JsonObject innerObject = new JsonObject();
         innerObject.addProperty("key", data.getName());
         innerObject.addProperty("value", data.getValue());
@@ -382,6 +413,7 @@ public class HomeConnectApiClient {
         MediaType JSON = MediaType.parse(BSH_JSON_V1);
         RequestBody requestBody = RequestBody.create(JSON, dataObject.toString());
 
+        checkCredentials();
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).put(requestBody)
                 .addHeader("Authorization", "Bearer " + token).build();
 
@@ -399,7 +431,7 @@ public class HomeConnectApiClient {
         }
     }
 
-    private synchronized void checkCredentials() throws ConfigurationException {
+    private synchronized void checkCredentials() throws ConfigurationException, CommunicationException {
         if (simulated) {
             if (isEmpty(token)) {
                 authorize();
@@ -419,27 +451,33 @@ public class HomeConnectApiClient {
     /**
      * Authorize (Authorization Code Grant Flow)
      * Works only with clientId from simulator.
+     *
+     * @throws CommunicationException
      */
-    private void authorize() {
+    private void authorize() throws CommunicationException {
         logger.debug("[oAuth] Authorize (Authorization Code Grant Flow). client_id: {}", clientId);
 
-        // TODO handle non 200 responses
-        // TODO handle exceptions
-        // TODO handle retry in case of io error or 500
-
-        String redirectUrl = "https://apiclient.home-connect.com/o2c.html";
-
         try {
+
             OkHttpClient client = new OkHttpClient().newBuilder().followRedirects(false).followSslRedirects(false)
                     .build();
 
             // step one - Authorization Request
-            HttpUrl url = HttpUrl.parse(apiUrl + "/security/oauth/authorize").newBuilder()
-                    .addQueryParameter("client_id", clientId).addQueryParameter("response_type", "code")
-                    .addQueryParameter("redirect_uri", redirectUrl)
-                    .addQueryParameter("scope", "IdentifyAppliance Monitor Settings").build();
+            HttpUrl url = HttpUrl.parse(apiUrl + AUTH_URI_PATH).newBuilder().addQueryParameter(AUTH_CLIENT_ID, clientId)
+                    .addQueryParameter("response_type", "code")
+                    .addQueryParameter(AUTH_REDIRECT_URI, AUTH_DEFAULT_REDIRECT_URL)
+                    .addQueryParameter(AUTH_SCOPE, AUTH_CODE_GRAND_SCOPE_VALUE).build();
             Request request = new Request.Builder().url(url).get().build();
-            Response response = client.newCall(request).execute();
+            Response response;
+            response = client.newCall(request).execute();
+            if (response.code() != HTTP_MOVED_TEMP) {
+                logger.error("[oAuth] Couldn't authorize against API! response: {}", response);
+                int code = response.code();
+                String body = response.body().string();
+                String message = response.message();
+                response.close();
+                throw new CommunicationException(code, message, body);
+            }
             HttpUrl location = HttpUrl.parse(response.header("Location"));
             String oAuthCode = location.queryParameter("code");
             logger.debug("[oAuth] Authorize (Authorization Code Grant Flow). http response code: {} oAuth code: {}",
@@ -447,21 +485,28 @@ public class HomeConnectApiClient {
             response.close();
 
             // step two - Access Token Request
-            RequestBody formBody = new FormBody.Builder().add("client_id", clientId)
-                    .add("grant_type", "authorization_code").add("redirect_uri", redirectUrl).add("code", oAuthCode)
-                    .build();
+            RequestBody formBody = new FormBody.Builder().add(AUTH_CLIENT_ID, clientId)
+                    .add("grant_type", "authorization_code").add(AUTH_REDIRECT_URI, AUTH_DEFAULT_REDIRECT_URL)
+                    .add("code", oAuthCode).build();
             Request accessTokenRequest = new Request.Builder().url(apiUrl + "/security/oauth/token").post(formBody)
                     .build();
-            String accessTokenResponse = client.newCall(accessTokenRequest).execute().body().string();
-            JsonObject responseObject = new JsonParser().parse(accessTokenResponse).getAsJsonObject();
+            Response accessTokenResponse = client.newCall(accessTokenRequest).execute();
+            if (accessTokenResponse.code() != HTTP_OK) {
+                logger.error("[oAuth] Couldn't get token! response: {}", response);
+                int code = accessTokenResponse.code();
+                String message = accessTokenResponse.message();
+                String body = accessTokenResponse.body().string();
+                accessTokenResponse.close();
+                throw new CommunicationException(code, message, body);
+            }
+            String accessTokenResponseBody = accessTokenResponse.body().string();
+            JsonObject responseObject = new JsonParser().parse(accessTokenResponseBody).getAsJsonObject();
             token = responseObject.get("access_token").getAsString();
             logger.debug("[oAuth] Access Token Request (Authorization Code Grant Flow).  token: {}", token);
 
-            // TODO test if refreshing works without client secret
-
-        } catch (Exception e) {
-            logger.error("error", e);
-            // TODO impl
+        } catch (IOException e) {
+            logger.error("Error accured while communicating with API!");
+            throw new CommunicationException(e);
         }
     }
 
