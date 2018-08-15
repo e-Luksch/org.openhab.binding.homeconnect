@@ -65,20 +65,41 @@ public class HomeConnectBridgeHandler extends BaseBridgeHandler {
     @SuppressWarnings("null")
     @Override
     public void initialize() {
-        logger.debug("Initializing Home Connect bridge handler");
+        if (logger.isDebugEnabled()) {
+            if (apiClient != null) {
+                logger.debug("Updating Home Connect bridge handler");
+            } else {
+                logger.debug("Initializing Home Connect bridge handler");
+            }
+        }
+
+        if (apiClient != null) {
+            // remove old api client
+            apiClient.dispose();
+        }
 
         config = getConfigAs(ApiBridgeConfiguration.class);
 
         // initialize api client
-        apiClient = new HomeConnectApiClient(config.getClientId(), config.getClientSecret(), config.getToken(),
-                config.getRefreshToken(), config.isSimulator());
+        apiClient = new HomeConnectApiClient(config.getClientId(), config.getClientSecret(), config.getRefreshToken(),
+                config.isSimulator());
 
         try {
             if (apiClient.getHomeAppliances() != null) {
                 updateStatus(ThingStatus.ONLINE);
+
+                // update API clients of bridge children
+                logger.debug("Refresh client handlers.");
+                List<Thing> children = getThing().getThings();
+                for (Thing thing : children) {
+                    ThingHandler childHandler = thing.getHandler();
+                    if (childHandler instanceof HomeConnectApiClientListener && apiClient != null) {
+                        ((HomeConnectApiClientListener) childHandler).refreshClient(apiClient);
+                    }
+                }
+
             } else {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-                        "Token seems to be not valid!");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Token seems to be invalid!");
                 scheduleReinitialize(REINITIALIZATION_LONG_DELAY);
             }
         } catch (ConfigurationException e) {
@@ -97,10 +118,6 @@ public class HomeConnectBridgeHandler extends BaseBridgeHandler {
         }
     }
 
-    @Override
-    public void childHandlerDisposed(ThingHandler childHandler, Thing childThing) {
-    }
-
     @SuppressWarnings("null")
     @Override
     public void dispose() {
@@ -117,19 +134,7 @@ public class HomeConnectBridgeHandler extends BaseBridgeHandler {
         } else {
             reinitializationFuture = scheduler.schedule(() -> {
 
-                scheduler.schedule(() -> {
-                    initialize();
-                    if (ThingStatus.ONLINE.equals(getThing().getStatus())) {
-                        logger.debug("Refresh client handlers.");
-                        List<Thing> children = getThing().getThings();
-                        for (Thing thing : children) {
-                            ThingHandler childHandler = thing.getHandler();
-                            if (childHandler instanceof HomeConnectApiClientListener && apiClient != null) {
-                                ((HomeConnectApiClientListener) childHandler).refreshClient(apiClient);
-                            }
-                        }
-                    }
-                }, REINITIALIZATION_SHORT_DELAY, TimeUnit.SECONDS);
+                scheduler.schedule(() -> initialize(), REINITIALIZATION_SHORT_DELAY, TimeUnit.SECONDS);
 
             }, seconds, TimeUnit.SECONDS);
         }

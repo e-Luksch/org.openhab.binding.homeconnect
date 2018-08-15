@@ -61,7 +61,7 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
         ApiBridgeConfiguration config = bridgeHandler.getThing().getConfiguration().as(ApiBridgeConfiguration.class);
 
         // initialize api client
-        HomeConnectApiClient apiClient = new HomeConnectApiClient(config.getClientId(), config.getClientSecret(), config.getToken(),
+        HomeConnectApiClient apiClient = new HomeConnectApiClient(config.getClientId(), config.getClientSecret(),
                 config.getRefreshToken(), config.isSimulator());
 
         try {

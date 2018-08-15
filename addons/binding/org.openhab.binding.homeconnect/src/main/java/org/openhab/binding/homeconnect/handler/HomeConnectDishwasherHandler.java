@@ -104,87 +104,105 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
     public void initialize() {
         // wait for bridge to be setup first
         updateStatus(ThingStatus.OFFLINE);
+
+        // if handler configuration is updated, re-register Server Sent Event Listener
+        HomeConnectApiClient hcac = client;
+        if (hcac != null) {
+            if (serverSentEventListener != null) {
+                logger.debug("Thing configuration might have changed --> re-register Server Sent Events listener.");
+                hcac.unregisterEventListener(serverSentEventListener);
+                try {
+                    hcac.registerEventListener(serverSentEventListener);
+                } catch (ConfigurationException | CommunicationException e) {
+                    logger.error("API communication problem!", e);
+                }
+            }
+
+            // refresh values
+            updateChannels();
+            refreshConnectionStatus();
+        }
     }
 
     @Override
     public void refreshClient(@NonNull HomeConnectApiClient apiClient) {
-        client = apiClient;
-        serverSentEventListener = new ServerSentEventListener() {
+        // Only update client if new instance is passed
+        if (!apiClient.equals(client)) {
+            client = apiClient;
+            serverSentEventListener = new ServerSentEventListener() {
 
-            @Override
-            public void onEvent(Event event) {
-                logger.debug("[{}] {}", getThingHaId(), event);
-                Channel channel = null;
+                @Override
+                public void onEvent(Event event) {
+                    logger.debug("[{}] {}", getThingHaId(), event);
+                    Channel channel = null;
 
-                switch (event.getKey()) {
-                    case STATE_POWER:
-                        channel = getThing().getChannel(CHANNEL_DISHWASHER_POWER_STATE);
-                        break;
-                    case STATE_DOOR:
-                        channel = getThing().getChannel(CHANNEL_DISHWASHER_DOOR_STATE);
-                        break;
-                    case STATE_OPERATION:
-                        channel = getThing().getChannel(CHANNEL_DISHWASHER_OPERATION_STATE);
-                        break;
-                    case STATE_REMOTE_CONTROL:
-                        channel = getThing().getChannel(CHANNEL_DISHWASHER_REMOTE_CONTROL_ACTIVE_STATE);
-                        break;
-                    case STATE_REMOTE_START:
-                        channel = getThing().getChannel(CHANNEL_DISHWASHER_REMOTE_START_ALLOWANCE_STATE);
-                        break;
-                    case OPTION_PROGRAM_PROGRESS:
-                        channel = getThing().getChannel(CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE);
-                        break;
-                    case OPTION_REMAINING_PROGRAM_TIME:
-                        channel = getThing().getChannel(CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE);
-                        break;
-                    case STATE_ACTIVE_PROGRAM:
-                        channel = getThing().getChannel(CHANNEL_DISHWASHER_ACTIVE_PROGRAM_STATE);
-                        break;
-                    default:
-                        logger.debug("[{}] Ignore event {}", getThingHaId(), event);
-                        break;
-                }
+                    switch (event.getKey()) {
+                        case STATE_POWER:
+                            channel = getThing().getChannel(CHANNEL_DISHWASHER_POWER_STATE);
+                            break;
+                        case STATE_DOOR:
+                            channel = getThing().getChannel(CHANNEL_DISHWASHER_DOOR_STATE);
+                            break;
+                        case STATE_OPERATION:
+                            channel = getThing().getChannel(CHANNEL_DISHWASHER_OPERATION_STATE);
+                            break;
+                        case STATE_REMOTE_CONTROL:
+                            channel = getThing().getChannel(CHANNEL_DISHWASHER_REMOTE_CONTROL_ACTIVE_STATE);
+                            break;
+                        case STATE_REMOTE_START:
+                            channel = getThing().getChannel(CHANNEL_DISHWASHER_REMOTE_START_ALLOWANCE_STATE);
+                            break;
+                        case OPTION_PROGRAM_PROGRESS:
+                            channel = getThing().getChannel(CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE);
+                            break;
+                        case OPTION_REMAINING_PROGRAM_TIME:
+                            channel = getThing().getChannel(CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE);
+                            break;
+                        case STATE_ACTIVE_PROGRAM:
+                            channel = getThing().getChannel(CHANNEL_DISHWASHER_ACTIVE_PROGRAM_STATE);
+                            break;
+                        default:
+                            logger.debug("[{}] Ignore event {}", getThingHaId(), event);
+                            break;
+                    }
 
-                if (channel != null) {
-                    ChannelUID channelUID = channel.getUID();
-                    updateState(channelUID, createState(channelUID, event.getValue()));
+                    if (channel != null) {
+                        ChannelUID channelUID = channel.getUID();
+                        updateState(channelUID, createState(channelUID, event.getValue()));
 
-                    // if active program change is received --> update progress and remaining channels via API call
-                    if (event.getKey().equals(STATE_ACTIVE_PROGRAM)) {
-                        Channel progress = getThing().getChannel(CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE);
-                        if (progress != null) {
-                            updateChannel(progress.getUID());
-                        }
-                        Channel remaining = getThing().getChannel(CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE);
-                        if (remaining != null) {
-                            updateChannel(remaining.getUID());
+                        // if active program change is received --> update progress and remaining channels via API call
+                        if (event.getKey().equals(STATE_ACTIVE_PROGRAM)) {
+                            Channel progress = getThing().getChannel(CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE);
+                            if (progress != null) {
+                                updateChannel(progress.getUID());
+                            }
+                            Channel remaining = getThing().getChannel(CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE);
+                            if (remaining != null) {
+                                updateChannel(remaining.getUID());
+                            }
                         }
                     }
                 }
-            }
 
-            @Override
-            public String haId() {
-                return getThingHaId();
-            }
+                @Override
+                public String haId() {
+                    return getThingHaId();
+                }
 
-            @Override
-            public void onReconnect() {
-                // update all channels via API
-                updateChannels();
+                @Override
+                public void onReconnect() {
+                }
+            };
+            try {
+                apiClient.registerEventListener(serverSentEventListener);
+                refreshConnectionStatus();
+                if (ThingStatus.ONLINE.equals(getThing().getStatus())) {
+                    updateChannels();
+                }
+            } catch (ConfigurationException | CommunicationException e) {
+                logger.error("API communication problem!", e);
             }
-        };
-        try {
-            apiClient.registerEventListener(serverSentEventListener);
-            refreshConnectionStatus();
-            if (ThingStatus.ONLINE.equals(getThing().getStatus())) {
-                updateChannels();
-            }
-        } catch (ConfigurationException | CommunicationException e) {
-            logger.error("API communication problem!", e);
         }
-
     }
 
     @Override
@@ -318,9 +336,10 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
                 return "true".equals(value) ? OnOffType.ON : OnOffType.OFF;
             } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_ACTIVE_PROGRAM_STATE)) {
                 return new StringType(mapStringType(value));
-            } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE)
-                    || channelUID.getId().equals(CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE)) {
-                return new DecimalType(value);
+            } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE)) {
+                return "0".equals(value) ? UnDefType.NULL : new DecimalType(value);
+            } else if (channelUID.getId().equals(CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE)) {
+                return "100".equals(value) ? UnDefType.NULL : new DecimalType(value);
             }
         }
 

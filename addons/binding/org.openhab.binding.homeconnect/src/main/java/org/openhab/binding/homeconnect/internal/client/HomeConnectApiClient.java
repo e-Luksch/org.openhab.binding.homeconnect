@@ -13,6 +13,7 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -73,11 +74,10 @@ public class HomeConnectApiClient {
 
     private OkSse oksse;
 
-    public HomeConnectApiClient(String clientId, String clientSecret, String token, String refreshToken,
-            boolean simulated) {
+    public HomeConnectApiClient(String clientId, String clientSecret, String refreshToken, boolean simulated) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
-        this.token = token;
+        this.token = null;
         this.refreshToken = refreshToken;
         this.simulated = simulated;
 
@@ -105,16 +105,21 @@ public class HomeConnectApiClient {
         Request request = new Request.Builder().url(apiUrl + "/api/homeappliances").header(ACCEPT, BSH_JSON_V1).get()
                 .addHeader("Authorization", "Bearer " + token).build();
 
+        Response response = null;
         try {
-            Response response = client.newCall(request).execute();
+            response = client.newCall(request).execute();
+            checkResponseCode(HTTP_OK, response);
             String body = response.body().string();
             logger.debug("[getHomeAppliances()] Response code: {}, body: {}", response.code(), body);
 
-            if (response.code() == HTTP_OK) {
-                return mapToHomeAppliances(body);
-            }
+            return mapToHomeAppliances(body);
+
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
 
         return null;
@@ -134,16 +139,20 @@ public class HomeConnectApiClient {
         Request request = new Request.Builder().url(apiUrl + "/api/homeappliances/" + haId).header(ACCEPT, BSH_JSON_V1)
                 .get().addHeader("Authorization", "Bearer " + token).build();
 
+        Response response = null;
         try {
-            Response response = client.newCall(request).execute();
+            response = client.newCall(request).execute();
+            checkResponseCode(HTTP_OK, response);
             String body = response.body().string();
             logger.debug("[getHomeAppliance({})] Response code: {}, body: {}", haId, response.code(), body);
 
-            if (response.code() == HTTP_OK) {
-                return mapToHomeAppliance(body);
-            }
+            return mapToHomeAppliance(body);
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
 
         return null;
@@ -343,10 +352,10 @@ public class HomeConnectApiClient {
      * Dispose and shutdown API client.
      */
     public synchronized void dispose() {
+        eventListeners.clear();
+
         serverSentEvent.forEach((key, value) -> value.close());
         serverSentEvent.clear();
-
-        eventListeners.clear();
     }
 
     private Data getSetting(String haId, String setting) throws ConfigurationException, CommunicationException {
@@ -367,8 +376,10 @@ public class HomeConnectApiClient {
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).get()
                 .addHeader("Authorization", "Bearer " + token).build();
 
+        Response response = null;
         try {
-            Response response = client.newCall(request).execute();
+            response = client.newCall(request).execute();
+            checkResponseCode(Arrays.asList(HTTP_OK, HTTP_NOT_FOUND), response);
             String body = response.body().string();
             logger.debug("[getProgram({}, {})] Response code: {}, body: {}", haId, path, response.code(), body);
 
@@ -377,6 +388,10 @@ public class HomeConnectApiClient {
             }
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
 
         return null;
@@ -388,16 +403,20 @@ public class HomeConnectApiClient {
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).get()
                 .addHeader("Authorization", "Bearer " + token).build();
 
+        Response response = null;
         try {
-            Response response = client.newCall(request).execute();
+            response = client.newCall(request).execute();
+            checkResponseCode(HTTP_OK, response);
             String body = response.body().string();
             logger.debug("[getData({}, {})] Response code: {}, body: {}", haId, path, response.code(), body);
 
-            if (response.code() == HTTP_OK) {
-                return mapToState(body);
-            }
+            return mapToState(body);
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
 
         return null;
@@ -417,34 +436,57 @@ public class HomeConnectApiClient {
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).put(requestBody)
                 .addHeader("Authorization", "Bearer " + token).build();
 
+        Response response = null;
         try {
-            Response response = client.newCall(request).execute();
+            response = client.newCall(request).execute();
             String body = response.body().string();
             logger.debug("[putData({}, {}, {})] Response code: {} body: {}", haId, path, data, response.code(), body);
 
-            if (response.code() == 204) {
-            }
-
-            // TODO handly non 204 responses
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
     }
 
     private synchronized void checkCredentials() throws ConfigurationException, CommunicationException {
-        if (simulated) {
-            if (isEmpty(token)) {
-                authorize();
-            }
-        } else {
-            if (isEmpty(refreshToken)) {
-                logger.error("No refresh token present!");
-                throw new ConfigurationException("No refresh token set!");
-            } else {
+        try {
+            if (simulated) {
                 if (isEmpty(token)) {
-                    refreshToken();
+                    authorize();
+                }
+            } else {
+                if (isEmpty(refreshToken)) {
+                    logger.error("No refresh token present!");
+                    throw new ConfigurationException("No refresh token set!");
+                } else {
+                    if (isEmpty(token)) {
+                        refreshToken();
+                    }
                 }
             }
+        } catch (CommunicationException e) {
+            // reset token
+            token = null;
+            throw e;
+        }
+    }
+
+    private void checkResponseCode(int desiredCode, Response response) throws CommunicationException, IOException {
+        checkResponseCode(Arrays.asList(desiredCode), response);
+    }
+
+    private void checkResponseCode(List<Integer> desiredCodes, Response response)
+            throws CommunicationException, IOException {
+
+        if (!desiredCodes.contains(response.code())) {
+            int code = response.code();
+            String message = response.message();
+            String body = response.body().string();
+            response.close();
+            throw new CommunicationException(code, message, body);
         }
     }
 
@@ -457,8 +499,9 @@ public class HomeConnectApiClient {
     private void authorize() throws CommunicationException {
         logger.debug("[oAuth] Authorize (Authorization Code Grant Flow). client_id: {}", clientId);
 
+        Response response = null;
+        Response accessTokenResponse = null;
         try {
-
             OkHttpClient client = new OkHttpClient().newBuilder().followRedirects(false).followSslRedirects(false)
                     .build();
 
@@ -468,21 +511,18 @@ public class HomeConnectApiClient {
                     .addQueryParameter(AUTH_REDIRECT_URI, AUTH_DEFAULT_REDIRECT_URL)
                     .addQueryParameter(AUTH_SCOPE, AUTH_CODE_GRAND_SCOPE_VALUE).build();
             Request request = new Request.Builder().url(url).get().build();
-            Response response;
             response = client.newCall(request).execute();
             if (response.code() != HTTP_MOVED_TEMP) {
                 logger.error("[oAuth] Couldn't authorize against API! response: {}", response);
                 int code = response.code();
                 String body = response.body().string();
                 String message = response.message();
-                response.close();
                 throw new CommunicationException(code, message, body);
             }
             HttpUrl location = HttpUrl.parse(response.header("Location"));
             String oAuthCode = location.queryParameter("code");
             logger.debug("[oAuth] Authorize (Authorization Code Grant Flow). http response code: {} oAuth code: {}",
                     response.code(), oAuthCode);
-            response.close();
 
             // step two - Access Token Request
             RequestBody formBody = new FormBody.Builder().add(AUTH_CLIENT_ID, clientId)
@@ -490,9 +530,9 @@ public class HomeConnectApiClient {
                     .add("code", oAuthCode).build();
             Request accessTokenRequest = new Request.Builder().url(apiUrl + "/security/oauth/token").post(formBody)
                     .build();
-            Response accessTokenResponse = client.newCall(accessTokenRequest).execute();
+            accessTokenResponse = client.newCall(accessTokenRequest).execute();
             if (accessTokenResponse.code() != HTTP_OK) {
-                logger.error("[oAuth] Couldn't get token! response: {}", response);
+                logger.error("[oAuth] Couldn't get token! response: {}", accessTokenResponse);
                 int code = accessTokenResponse.code();
                 String message = accessTokenResponse.message();
                 String body = accessTokenResponse.body().string();
@@ -507,37 +547,53 @@ public class HomeConnectApiClient {
         } catch (IOException e) {
             logger.error("Error accured while communicating with API!");
             throw new CommunicationException(e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+            if (accessTokenResponse != null) {
+                accessTokenResponse.close();
+            }
         }
     }
 
     /**
      * Refresh oAuth token with configured refresh token (Device Flow).
+     * Works only with physical devices and oAuth Device Flow.
      *
      *
      * The configured refresh token will not expire if it used regularly (expires if it wasn't used within 2 months).
+     *
+     * @throws CommunicationException
      */
-    private void refreshToken() {
-        logger.debug("Refreshing token. token: {} refresh_token: {}", token, refreshToken);
+    private void refreshToken() throws CommunicationException {
+        logger.debug("[oAuth] Refreshing token (Device Flow). client_id: {}, refresh_token: {}", clientId,
+                refreshToken);
 
-        // TODO handle non 200 responses
-        // TODO handle exceptions
-        // TODO handle retry in case of io error or 500
+        RequestBody formBody = new FormBody.Builder().add("refresh_token", refreshToken)
+                .add("grant_type", "refresh_token").add("client_secret", clientSecret).build();
 
+        Request request = new Request.Builder().url(apiUrl + "/security/oauth/token").post(formBody).build();
+        Response response = null;
         try {
-            RequestBody formBody = new FormBody.Builder().add("refresh_token", refreshToken)
-                    .add("grant_type", "refresh_token").add("client_secret", clientSecret).build();
+            response = client.newCall(request).execute();
+            String responseBody = response.body().string();
+            int responseCode = response.code();
+            String responseMessage = response.message();
+            if (response.code() != HTTP_OK) {
+                throw new CommunicationException(responseCode, responseMessage, responseBody);
+            }
+            logger.debug("[oAuth] refresh token response code: {}, body: {}.", responseCode, responseBody);
 
-            Request request = new Request.Builder().url(apiUrl + "/security/oauth/token").post(formBody).build();
-            String response = client.newCall(request).execute().body().string();
-
-            logger.debug("refresh token response body {}.", response);
-
-            JsonObject responseObject = new JsonParser().parse(response).getAsJsonObject();
-
+            JsonObject responseObject = new JsonParser().parse(responseBody).getAsJsonObject();
             token = responseObject.get("access_token").getAsString();
-        } catch (Exception e) {
-            // TODO impl
+        } catch (IOException e) {
+            logger.error("Error accured while communicating with API!");
+            throw new CommunicationException(e);
         } finally {
+            if (response != null) {
+                response.close();
+            }
         }
     }
 
