@@ -14,7 +14,7 @@ import java.util.Date;
 /**
  * API communication exception
  *
- * @author Jonas Brüstel
+ * @author Jonas Brüstel - Initial contribution
  *
  */
 public class CommunicationException extends Exception {
