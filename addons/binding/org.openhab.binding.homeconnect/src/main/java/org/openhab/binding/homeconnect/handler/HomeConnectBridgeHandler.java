@@ -126,6 +126,10 @@ public class HomeConnectBridgeHandler extends BaseBridgeHandler {
         }
     }
 
+    public @Nullable HomeConnectApiClient getApiClient() {
+        return apiClient;
+    }
+
     @SuppressWarnings("null")
     private synchronized void scheduleReinitialize(int seconds) {
         if (reinitializationFuture != null && !reinitializationFuture.isDone()) {

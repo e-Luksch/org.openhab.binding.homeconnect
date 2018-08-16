@@ -212,11 +212,22 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
         }
     }
 
+    @Override
+    public String toString() {
+        return "HomeConnectDishwasherHandler [haId: " + getThingHaId() + "]";
+    }
+
     /**
      * Update all channels via API.
      *
      */
     private void updateChannels() {
+        Bridge bridge = getBridge();
+        if (bridge == null || ThingStatus.OFFLINE.equals(bridge.getStatus())) {
+            logger.warn("BridgeHandler not found or offline. Stopping update of channels.");
+            return;
+        }
+
         List<Channel> channels = getThing().getChannels();
         for (Channel channel : channels) {
             updateChannel(channel.getUID());
@@ -233,6 +244,12 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
 
         if (apiClient == null) {
             logger.error("Cannot update channel. No instance of api client found!");
+            return;
+        }
+
+        Bridge bridge = getBridge();
+        if (bridge == null || ThingStatus.OFFLINE.equals(bridge.getStatus())) {
+            logger.warn("BridgeHandler not found or offline. Stopping update of channel {}.", channelUID);
             return;
         }
 

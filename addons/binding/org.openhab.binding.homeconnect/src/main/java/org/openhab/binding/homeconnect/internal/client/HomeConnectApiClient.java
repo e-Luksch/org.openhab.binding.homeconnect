@@ -20,6 +20,7 @@ import java.util.List;
 import org.openhab.binding.homeconnect.handler.HomeConnectBridgeHandler;
 import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
+import org.openhab.binding.homeconnect.internal.client.exception.InvalidTokenException;
 import org.openhab.binding.homeconnect.internal.client.listener.ServerSentEventListener;
 import org.openhab.binding.homeconnect.internal.client.model.Data;
 import org.openhab.binding.homeconnect.internal.client.model.Event;
@@ -103,7 +104,7 @@ public class HomeConnectApiClient {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + "/api/homeappliances").header(ACCEPT, BSH_JSON_V1).get()
-                .addHeader("Authorization", "Bearer " + token).build();
+                .addHeader("Authorization", "Bearer " + getToken()).build();
 
         Response response = null;
         try {
@@ -116,6 +117,9 @@ public class HomeConnectApiClient {
 
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } catch (InvalidTokenException e) {
+            logger.debug("[getHomeAppliances()] Retrying method.");
+            return getHomeAppliances();
         } finally {
             if (response != null) {
                 response.close();
@@ -137,7 +141,7 @@ public class HomeConnectApiClient {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + "/api/homeappliances/" + haId).header(ACCEPT, BSH_JSON_V1)
-                .get().addHeader("Authorization", "Bearer " + token).build();
+                .get().addHeader("Authorization", "Bearer " + getToken()).build();
 
         Response response = null;
         try {
@@ -149,6 +153,9 @@ public class HomeConnectApiClient {
             return mapToHomeAppliance(body);
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } catch (InvalidTokenException e) {
+            logger.debug("[getHomeAppliance({})] Retrying method.", haId);
+            return getHomeAppliance(haId);
         } finally {
             if (response != null) {
                 response.close();
@@ -263,7 +270,7 @@ public class HomeConnectApiClient {
         if (!serverSentEvent.containsKey(haId)) {
             checkCredentials();
             Request request = new Request.Builder().url(apiUrl + "/api/homeappliances/" + haId + "/events")
-                    .addHeader("Authorization", "Bearer " + token).build();
+                    .addHeader("Authorization", "Bearer " + getToken()).build();
 
             ServerSentEvent sse = oksse.newServerSentEvent(request, new ServerSentEvent.Listener() {
 
@@ -374,7 +381,7 @@ public class HomeConnectApiClient {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).get()
-                .addHeader("Authorization", "Bearer " + token).build();
+                .addHeader("Authorization", "Bearer " + getToken()).build();
 
         Response response = null;
         try {
@@ -388,6 +395,9 @@ public class HomeConnectApiClient {
             }
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } catch (InvalidTokenException e) {
+            logger.debug("[getProgram({}, {})] Retrying method.", haId, path);
+            return getProgram(haId, path);
         } finally {
             if (response != null) {
                 response.close();
@@ -401,7 +411,7 @@ public class HomeConnectApiClient {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).get()
-                .addHeader("Authorization", "Bearer " + token).build();
+                .addHeader("Authorization", "Bearer " + getToken()).build();
 
         Response response = null;
         try {
@@ -413,6 +423,9 @@ public class HomeConnectApiClient {
             return mapToState(body);
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } catch (InvalidTokenException e) {
+            logger.debug("[getData({}, {})] Retrying method.", haId, path);
+            return getData(haId, path);
         } finally {
             if (response != null) {
                 response.close();
@@ -434,21 +447,33 @@ public class HomeConnectApiClient {
 
         checkCredentials();
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).put(requestBody)
-                .addHeader("Authorization", "Bearer " + token).build();
+                .addHeader("Authorization", "Bearer " + getToken()).build();
 
         Response response = null;
         try {
             response = client.newCall(request).execute();
+            checkResponseCode(HTTP_NO_CONTENT, response);
             String body = response.body().string();
             logger.debug("[putData({}, {}, {})] Response code: {} body: {}", haId, path, data, response.code(), body);
 
         } catch (IOException e) {
             logger.error("Token does not work!", e);
+        } catch (InvalidTokenException e) {
+            logger.debug("[putData({}, {}, {})] Retrying method.", haId, path, data);
+            putData(haId, path, data);
         } finally {
             if (response != null) {
                 response.close();
             }
         }
+    }
+
+    private synchronized String getToken() {
+        return token;
+    }
+
+    private synchronized String setToken(String token) {
+        return this.token = token;
     }
 
     private synchronized void checkCredentials() throws ConfigurationException, CommunicationException {
@@ -474,17 +499,28 @@ public class HomeConnectApiClient {
         }
     }
 
-    private void checkResponseCode(int desiredCode, Response response) throws CommunicationException, IOException {
+    private void checkResponseCode(int desiredCode, Response response)
+            throws CommunicationException, IOException, InvalidTokenException, ConfigurationException {
         checkResponseCode(Arrays.asList(desiredCode), response);
     }
 
     private void checkResponseCode(List<Integer> desiredCodes, Response response)
-            throws CommunicationException, IOException {
+            throws CommunicationException, IOException, InvalidTokenException, ConfigurationException {
+
+        if (!desiredCodes.contains(HTTP_UNAUTHORIZED) && response.code() == HTTP_UNAUTHORIZED) {
+            response.close();
+
+            logger.debug("[oAuth] Current token is invalid --> need to refresh!");
+            setToken(null);
+
+            throw new InvalidTokenException("Token invalid!");
+        }
 
         if (!desiredCodes.contains(response.code())) {
             int code = response.code();
             String message = response.message();
             String body = response.body().string();
+
             response.close();
             throw new CommunicationException(code, message, body);
         }

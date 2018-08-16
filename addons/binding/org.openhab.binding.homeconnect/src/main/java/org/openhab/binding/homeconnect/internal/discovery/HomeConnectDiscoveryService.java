@@ -10,6 +10,7 @@ package org.openhab.binding.homeconnect.internal.discovery;
 
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,6 @@ import org.openhab.binding.homeconnect.handler.HomeConnectBridgeHandler;
 import org.openhab.binding.homeconnect.internal.client.HomeConnectApiClient;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.client.model.HomeAppliance;
-import org.openhab.binding.homeconnect.internal.configuration.ApiBridgeConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +50,7 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
      * @param bridgeHandler
      */
     public HomeConnectDiscoveryService(@NonNull HomeConnectBridgeHandler bridgeHandler) {
-        super(SUPPORTED_DEVICE_THING_TYPES_UIDS, SEARCH_TIME, true);
+        super(Collections.singleton(THING_TYPE_DISHWASHER), SEARCH_TIME, true);
         this.bridgeHandler = bridgeHandler;
     }
 
@@ -58,50 +58,46 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
     protected void startScan() {
         logger.debug("Starting device scan.");
 
-        ApiBridgeConfiguration config = bridgeHandler.getThing().getConfiguration().as(ApiBridgeConfiguration.class);
-
-        // initialize api client
-        HomeConnectApiClient apiClient = new HomeConnectApiClient(config.getClientId(), config.getClientSecret(),
-                config.getRefreshToken(), config.isSimulator());
+        HomeConnectApiClient apiClient = bridgeHandler.getApiClient();
 
         try {
-            List<HomeAppliance> appliances = apiClient.getHomeAppliances();
-            if (appliances != null) {
-                logger.info("Found the following devices {}", appliances);
+            if (apiClient != null) {
+                List<HomeAppliance> appliances = apiClient.getHomeAppliances();
+                if (appliances != null) {
+                    logger.debug("Found the following devices {}", appliances);
 
-                // add found devices
-                for (HomeAppliance appliance : appliances) {
-                    if (alreadyExists(appliance.getHaId())) {
-                        logger.debug("[{}] Device already added '{}'.", appliance.getHaId(), appliance.getType());
-                    } else if (THING_TYPE_DISHWASHER.getId().equalsIgnoreCase(appliance.getType())) {
-                        bridgeHandler.getThing().getThings().forEach(thing -> thing.getProperties().get(HA_ID));
+                    // add found devices
+                    for (HomeAppliance appliance : appliances) {
+                        if (alreadyExists(appliance.getHaId())) {
+                            logger.debug("[{}] '{}' already added as thing.", appliance.getHaId(), appliance.getType());
+                        } else if (THING_TYPE_DISHWASHER.getId().equalsIgnoreCase(appliance.getType())) {
+                            logger.info("[{}] Found dishwasher.", appliance.getHaId());
+                            bridgeHandler.getThing().getThings().forEach(thing -> thing.getProperties().get(HA_ID));
 
-                        Map<String, Object> properties = new HashMap<>();
-                        properties.put(HA_ID, appliance.getHaId());
-                        String name = appliance.getBrand() + " " + appliance.getName() + " (" + appliance.getHaId()
-                                + ")";
+                            Map<String, Object> properties = new HashMap<>();
+                            properties.put(HA_ID, appliance.getHaId());
+                            String name = appliance.getBrand() + " " + appliance.getName() + " (" + appliance.getHaId()
+                                    + ")";
 
-                        DiscoveryResult discoveryResult = DiscoveryResultBuilder
-                                .create(new ThingUID(THING_TYPE_DISHWASHER.getBindingId(),
-                                        THING_TYPE_DISHWASHER.getId(), appliance.getHaId()))
-                                .withThingType(THING_TYPE_DISHWASHER).withProperties(properties)
-                                .withBridge(bridgeHandler.getThing().getUID()).withLabel(name).build();
-                        thingDiscovered(discoveryResult);
-                    } else {
-                        logger.info("[{}]Ignoring unsupported device type '{}'.", appliance.getHaId(),
-                                appliance.getType());
+                            DiscoveryResult discoveryResult = DiscoveryResultBuilder
+                                    .create(new ThingUID(THING_TYPE_DISHWASHER.getBindingId(),
+                                            THING_TYPE_DISHWASHER.getId(), appliance.getHaId()))
+                                    .withThingType(THING_TYPE_DISHWASHER).withProperties(properties)
+                                    .withBridge(bridgeHandler.getThing().getUID()).withLabel(name).build();
+                            thingDiscovered(discoveryResult);
+                        } else {
+                            logger.debug("[{}]Ignoring unsupported device type '{}'.", appliance.getHaId(),
+                                    appliance.getType());
+                        }
                     }
                 }
-
             }
         } catch (ConfigurationException e) {
             logger.debug("Configuration exception. Stopping scan.", e);
         } catch (Exception e) {
             logger.error("Exception during scan.", e);
-        } finally {
-            apiClient.dispose();
-            logger.debug("Finished device scan.");
         }
+        logger.debug("Finished device scan.");
     }
 
     @Override
