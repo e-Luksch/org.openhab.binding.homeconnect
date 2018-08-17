@@ -100,7 +100,7 @@ public class HomeConnectApiClient {
      * @throws ConfigurationException
      * @throws CommunicationException
      */
-    public List<HomeAppliance> getHomeAppliances() throws ConfigurationException, CommunicationException {
+    public synchronized List<HomeAppliance> getHomeAppliances() throws ConfigurationException, CommunicationException {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + "/api/homeappliances").header(ACCEPT, BSH_JSON_V1).get()
@@ -137,7 +137,8 @@ public class HomeConnectApiClient {
      * @throws ConfigurationException
      * @throws CommunicationException
      */
-    public HomeAppliance getHomeAppliance(String haId) throws ConfigurationException, CommunicationException {
+    public synchronized HomeAppliance getHomeAppliance(String haId)
+            throws ConfigurationException, CommunicationException {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + "/api/homeappliances/" + haId).header(ACCEPT, BSH_JSON_V1)
@@ -377,7 +378,8 @@ public class HomeConnectApiClient {
         return getData(haId, "/api/homeappliances/" + haId + "/status/" + status);
     }
 
-    private Program getProgram(String haId, String path) throws ConfigurationException, CommunicationException {
+    private synchronized Program getProgram(String haId, String path)
+            throws ConfigurationException, CommunicationException {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).get()
@@ -407,7 +409,7 @@ public class HomeConnectApiClient {
         return null;
     }
 
-    private Data getData(String haId, String path) throws ConfigurationException, CommunicationException {
+    private synchronized Data getData(String haId, String path) throws ConfigurationException, CommunicationException {
         checkCredentials();
 
         Request request = new Request.Builder().url(apiUrl + path).header(ACCEPT, BSH_JSON_V1).get()
@@ -435,7 +437,8 @@ public class HomeConnectApiClient {
         return null;
     }
 
-    private void putData(String haId, String path, Data data) throws ConfigurationException, CommunicationException {
+    private synchronized void putData(String haId, String path, Data data)
+            throws ConfigurationException, CommunicationException {
         JsonObject innerObject = new JsonObject();
         innerObject.addProperty("key", data.getName());
         innerObject.addProperty("value", data.getValue());
@@ -468,15 +471,15 @@ public class HomeConnectApiClient {
         }
     }
 
-    private synchronized String getToken() {
+    private String getToken() {
         return token;
     }
 
-    private synchronized String setToken(String token) {
+    private String setToken(String token) {
         return this.token = token;
     }
 
-    private synchronized void checkCredentials() throws ConfigurationException, CommunicationException {
+    private void checkCredentials() throws ConfigurationException, CommunicationException {
         try {
             if (simulated) {
                 if (isEmpty(token)) {
