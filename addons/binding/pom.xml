@@ -147,6 +147,5 @@
     <module>org.openhab.binding.yeelight</module>
     <module>org.openhab.binding.zoneminder</module>
     <module>org.openhab.binding.zway</module>
-    <module>org.openhab.binding.homeconnect</module>
   </modules>
 </project>

@@ -312,6 +312,25 @@ public class HomeConnectApiClient {
 
                 @Override
                 public boolean onRetryError(ServerSentEvent sse, Throwable throwable, Response response) {
+                    if (response != null && response.code() == HTTP_UNAUTHORIZED) {
+                        logger.error("SSE token became invalid --> close SSE response: {}", response);
+
+                        // invalidate old token
+                        synchronized (HomeConnectApiClient.this) {
+                            setToken(null);
+                            try {
+                                checkCredentials();
+                                serverSentEvent.remove(haId);
+                                eventListeners.remove(eventListener);
+                                registerEventListener(eventListener);
+
+                            } catch (ConfigurationException | CommunicationException e) {
+                                logger.error("Could not refresh token!", e);
+                            }
+                        }
+
+                        return false;
+                    }
                     return true; // True to retry, false otherwise
                 }
 
