@@ -1,52 +1,136 @@
-# <bindingName> Binding
+# HomeConnect Binding
 
-_Give some details about what this binding is meant for - a protocol, system, specific device._
+The binding integrates the [Home Connect](https://www.home-connect.com/) system into openHAB.
+It uses the Home Connect API to connect to household devices (Bosch and Siemens). 
 
-_If possible, provide some resources like pictures, a YouTube video, etc. to give an impression of what can be done with this binding. You can place such resources into a `doc` folder next to this README.md._
+As all status updates and commands have to go through the API, a permanent internet connection is required.
+
+Supported devices: dishwasher
 
 ## Supported Things
 
-_Please describe the different supported things / devices within this section._
-_Which different types are supported, which models were tested etc.?_
-_Note that it is planned to generate some part of this based on the XML files within ```ESH-INF/thing``` of your binding._
+### Bridge
+
+The __Home Connect API__ is responsible for the communication with the Home Connect API. All devices use this bridge to execute commands and listen for updates. Without a working bridge the devices cannot communicate.
+
+### Devices
+
+Currently only dishwashers are supported.
 
 ## Discovery
 
-_Describe the available auto-discovery features here. Mention for what it works and what needs to be kept in mind when using it._
+After the bridge has been added, devices are discovered automatically.
 
-## Binding Configuration
-
-_If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it. In this section, you should link to this file and provide some information about the options. The file could e.g. look like:_
-
-```
-# Configuration for the Philips Hue Binding
-#
-# Default secret key for the pairing of the Philips Hue Bridge.
-# It has to be between 10-40 (alphanumeric) characters 
-# This may be changed by the user for security reasons.
-secret=EclipseSmartHome
-```
-
-_Note that it is planned to generate some part of this based on the information that is available within ```ESH-INF/binding``` of your binding._
-
-_If your binding does not offer any generic configurations, you can remove this section completely._
-
-## Thing Configuration
-
-_Describe what is needed to manually configure a thing, either through the (Paper) UI or via a thing-file. This should be mainly about its mandatory and optional configuration parameters. A short example entry for a thing file can help!_
-
-_Note that it is planned to generate some part of this based on the XML files within ```ESH-INF/thing``` of your binding._
 
 ## Channels
 
-_Here you should provide information about available channel types, what their meaning is and how they can be used._
+| Channel Type ID | Item Type    | Description  | Available on thing |
+| --------------- | ------------ | ------------ | ------------------ |
+| power_state | Switch | This setting describes the current power state of the home appliance. | dishwasher | 
+| door_state | Contact | This status describes the state of the door of the home appliance. A change of that status is either triggered by the user operating the home appliance locally (i.e. opening/closing door) or automatically by the home appliance (i.e. locking the door). | dishwasher | 
+| operation_state | String | This status describes the operation state of the home appliance. | dishwasher | 
+| remote_start_allowance_state | Switch | This status indicates whether the remote program start is enabled. This can happen due to a programmatic change (only disabling), or manually by the user changing the flag locally on the home appliance, or automatically after a certain duration - usually 24 hours. | dishwasher | 
+| remote_control_active_state | Switch | This status indicates whether the allowance for remote controlling is enabled. | dishwasher | 
+| active_program_state | String | This status describes the active program of the home appliance. | dishwasher | 
+| remaining_program_time_state | Number | This status indicates the remaining program time (in seconds) of the home appliance. | dishwasher | 
+| program_progress_state | Number | This status describes the program progress of the home appliance. | dishwasher | 
 
-_Note that it is planned to generate some part of this based on the XML files within ```ESH-INF/thing``` of your binding._
 
-## Full Example
+## Thing Configuration
 
-_Provide a full usage example based on textual configuration files (*.things, *.items, *.sitemap)._
+### Configuring the __Home Connect API__ Bridge
 
-## Any custom content here!
 
-_Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
+#### Physical appliance
+
+##### 1. Preconditions
+
+1. Please create an account at [Home Connect](https://www.home-connect.com/) and add your physical appliance to your account.
+2. Test the connection to your physical appliance via mobile app ([Apple App Store (iOS) ](https://itunes.apple.com/de/app/home-connect-app/id901397789?mt=8) or [Google Play Store (Android)](https://play.google.com/store/apps/details?id=com.bshg.homeconnect.android.release)).
+
+##### 2. Create oAuth2 tokens (Device Flow)
+
+1. Create an account at [https://developer.home-connect.com](https://developer.home-connect.com) and login.
+2. Create an application at [https://developer.home-connect.com/applications](https://developer.home-connect.com/applications)
+    * _Application ID_: e.g. `openhab-binding`
+    * _OAuth Flow_: Device Flow
+    * _Home Connect User Account for Testing_: the associated user account from [Home Connect](https://www.home-connect.com/)
+3. Now you should see the client id and secret of the application. Please save them for later.
+4. Use `curl` or equivalent method to start the authorization. Please replace `[client id]` with your application client id.
+
+Curl call:
+```
+curl -X POST \
+  https://api.home-connect.com/security/oauth/device_authorization \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'client_id=[client id]&scope=IdentifyAppliance%20Monitor%20Settings'
+```
+
+Response:
+```
+{
+    "expires_in": 300,
+    "device_code": "xxxxx-yyy-44fa-ff5-5b82c6348",
+    "user_code": "0123-4567",
+    "verification_uri": "https://verify.home-connect.com",
+    "interval": 5,
+    "verification_uri_complete": "https://verify.home-connect.com?user_code=0123-4567"
+}
+```
+Please save the `device_code` and the `verification_uri_complete` for later use.
+
+5. Open the `verification_uri_complete` link in a web browser. You can now login and grant access.
+6. Use `curl` or equivalent method to get the oAuth token. Please replace `[client id]` and `[client secret]` with your application credentials. For `[device code]` use response data from step 4. 
+
+Curl call:
+```
+curl -X POST \
+  https://api.home-connect.com/security/oauth/token \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'client_id=[client id]&client_secret=[client secret]&grant_type=device_code&device_code=[device code]'
+```
+
+Response:
+```
+{
+    "id_token": "xyz",
+    "access_token": "abc",
+    "expires_in": 86400,
+    "scope": "IdentifyAppliance Monitor Settings",
+    "refresh_token": "123456",
+    "token_type": "Bearer"
+}
+```
+
+Please save `refresh_token` for later use in Paper UI. According to the API documentation the token expires if it wasn't used within 2 months. These means once setup, the configuration should work without recreating tokens manually.
+
+##### 3. Setup Paper UI
+
+The Home Connect bridge can be configured in the Paper UI as follows:
+
+1. Go to Inbox > Choose Binding and add a new "HomeConnect Binding".
+2. Enter
+    * __client id:__ your application client id
+    * __client secret:__ your application client secret
+    * __simulator:__ false
+    * __refresh token:__ token from previous step
+3. That's it! Now you can use autodiscovery to add dishwashers.
+
+#### Simulator
+
+The Home Connect developer site allows you to use simulated appliances. You can control them at https://developer.home-connect.com/simulator/dishwasher.
+
+1. Create an account at [https://developer.home-connect.com](https://developer.home-connect.com) and login.
+2. Open [https://developer.home-connect.com/applications](https://developer.home-connect.com/applications) and save the client id from the default application: "API Web Client" for later use.
+3. Setup bridge at Paper UI
+    1. Go to Inbox > Choose Binding and add a new "HomeConnect Binding".
+    2. Enter
+        * __client id:__ id from 2. step
+        * __client secret:__ leave blank
+        * __simulator:__ true
+        * __refresh token:__ leave blank
+    3. That's it! Now you can use autodiscovery to add dishwashers.
+
+
