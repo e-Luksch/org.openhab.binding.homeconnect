@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.openhab.binding.homeconnect.handler.HomeConnectBridgeHandler;
 import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
@@ -62,6 +63,7 @@ public class HomeConnectApiClient {
     private final static String AUTH_REDIRECT_URI = "redirect_uri";
     private final static String AUTH_SCOPE = "scope";
     private final static String AUTH_CODE_GRAND_SCOPE_VALUE = "IdentifyAppliance Monitor Settings";
+    private final static int REQUEST_READ_TIMEOUT = 90;
 
     private final Logger logger = LoggerFactory.getLogger(HomeConnectBridgeHandler.class);
     private OkHttpClient client;
@@ -90,7 +92,9 @@ public class HomeConnectApiClient {
         apiUrl = simulated ? API_SIMULATOR_URL : API_URL;
 
         // configure Server Sent Event client
-        oksse = new OkSse();
+        // if no keep-alive events arrive within 90 seconds --> fail and try to reconnect
+        oksse = new OkSse(new OkHttpClient.Builder().readTimeout(REQUEST_READ_TIMEOUT, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true).build());
     }
 
     /**
@@ -307,11 +311,16 @@ public class HomeConnectApiClient {
 
                 @Override
                 public boolean onRetryTime(ServerSentEvent sse, long milliseconds) {
+                    logger.debug("[{}] SSE retry time {}", haId, milliseconds);
                     return true; // True to use the new retry time received by SSE
                 }
 
                 @Override
                 public boolean onRetryError(ServerSentEvent sse, Throwable throwable, Response response) {
+                    if (logger.isDebugEnabled() && throwable != null) {
+                        logger.debug("[{}] SSE error.", haId, throwable);
+                    }
+
                     if (response != null && response.code() == HTTP_UNAUTHORIZED) {
                         logger.error("SSE token became invalid --> close SSE response: {}", response);
 
@@ -323,6 +332,7 @@ public class HomeConnectApiClient {
                                 serverSentEvent.remove(haId);
                                 eventListeners.remove(eventListener);
                                 registerEventListener(eventListener);
+                                sse.close();
 
                             } catch (ConfigurationException | CommunicationException e) {
                                 logger.error("Could not refresh token!", e);
@@ -336,7 +346,7 @@ public class HomeConnectApiClient {
 
                 @Override
                 public void onClosed(ServerSentEvent sse) {
-                    // Channel closed
+                    logger.debug("[{}] SSE closed {}", haId, sse);
                 }
 
                 @Override
