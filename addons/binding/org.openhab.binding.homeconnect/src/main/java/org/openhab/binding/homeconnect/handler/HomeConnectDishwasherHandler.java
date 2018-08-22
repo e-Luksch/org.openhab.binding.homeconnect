@@ -68,7 +68,7 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
         Bridge bridge = getBridge();
         HomeConnectApiClient apiClient = client;
         if (bridge == null) {
-            logger.warn("BridgeHandler not found. Cannot handle command without bridge.");
+            logger.error("BridgeHandler not found. Cannot handle command without bridge.");
             return;
         }
         if (ThingStatus.OFFLINE.equals(bridge.getStatus())) {
@@ -76,7 +76,7 @@ public class HomeConnectDishwasherHandler extends BaseThingHandler implements Ho
             return;
         }
         if (apiClient == null) {
-            logger.warn("No API client available.");
+            logger.debug("No API client available.");
             return;
         }
 
