@@ -33,39 +33,6 @@ public class HomeConnectBindingConstants {
     public static final ThingTypeUID THING_TYPE_DISHWASHER = new ThingTypeUID(BINDING_ID, "dishwasher");
     public static final ThingTypeUID THING_TYPE_OVEN = new ThingTypeUID(BINDING_ID, "oven");
 
-    // List of all Channel IDs
-    public static final String CHANNEL_DISHWASHER_POWER_STATE = "dishwasher_power_state";
-    public static final String CHANNEL_DISHWASHER_DOOR_STATE = "dishwasher_door_state";
-    public static final String CHANNEL_DISHWASHER_OPERATION_STATE = "dishwasher_operation_state";
-    public static final String CHANNEL_DISHWASHER_REMOTE_START_ALLOWANCE_STATE = "dishwasher_remote_start_allowance_state";
-    public static final String CHANNEL_DISHWASHER_REMOTE_CONTROL_ACTIVE_STATE = "dishwasher_remote_control_active_state";
-    public static final String CHANNEL_DISHWASHER_ACTIVE_PROGRAM_STATE = "dishwasher_active_program_state";
-    public static final String CHANNEL_DISHWASHER_REMAINING_PROGRAM_TIME_STATE = "dishwasher_remaining_program_time_state";
-    public static final String CHANNEL_DISHWASHER_PROGRAM_PROGRESS_STATE = "dishwasher_program_progress_state";
-
-    public static final String CHANNEL_OVEN_POWER_STATE = "oven_power_state";
-    public static final String CHANNEL_OVEN_DOOR_STATE = "oven_door_state";
-    public static final String CHANNEL_OVEN_OPERATION_STATE = "oven_operation_state";
-    public static final String CHANNEL_OVEN_REMOTE_START_ALLOWANCE_STATE = "oven_remote_start_allowance_state";
-    public static final String CHANNEL_OVEN_REMOTE_CONTROL_ACTIVE_STATE = "oven_remote_control_active_state";
-    public static final String CHANNEL_OVEN_ACTIVE_PROGRAM_STATE = "oven_active_program_state";
-    public static final String CHANNEL_OVEN_REMAINING_PROGRAM_TIME_STATE = "oven_remaining_program_time_state";
-    public static final String CHANNEL_OVEN_PROGRAM_PROGRESS_STATE = "oven_program_progress_state";
-
-    // Channel Type IDs
-    public static final String CHANNEL_TYPE_ID_POWER_STATE = "power_state";
-    public static final String CHANNEL_TYPE_ID_POWER_STATE_READ_ONLY = "power_state_read_only";
-    public static final String CHANNEL_TYPE_ID_DOOR_STATE = "door_state";
-    public static final String CHANNEL_TYPE_ID_OPERATION_STATE = "operation_state";
-    public static final String CHANNEL_TYPE_ID_REMOTE_START_ALLOWANCE_STATE = "remote_start_allowance_state";
-    public static final String CHANNEL_TYPE_ID_REMOTE_CONTROL_ACTIVE_STATE = "remote_control_active_state";
-    public static final String CHANNEL_TYPE_ID_ACTIVE_PROGRAM_STATE = "active_program_state";
-    public static final String CHANNEL_TYPE_ID_REMAINING_PROGRAM_TIME_STATE = "remaining_program_time_state";
-    public static final String CHANNEL_TYPE_ID_PROGRESS_STATE = "program_progress_state";
-    public static final String CHANNEL_TYPE_ID_CURRENT_CAVITY_TEMPERATURE = "current_cavity_temperature";
-    public static final String CHANNEL_TYPE_ID_ELAPSED_PROGRAM_TIME = "elapsed_program_time";
-
-    // ------------------------------------------------------------------
     // SSE Event types
     public static final String EVENT_ELAPSED_PROGRAM_TIME = "BSH.Common.Option.ElapsedProgramTime";
     public static final String EVENT_OVEN_CAVITY_TEMPERATURE = "Cooking.Oven.Status.CurrentCavityTemperature";
@@ -114,20 +81,10 @@ public class HomeConnectBindingConstants {
     public static final String STATE_DOOR_LOCKED = "BSH.Common.EnumType.DoorState.Locked";
     public static final String STATE_DOOR_CLOSED = "BSH.Common.EnumType.DoorState.Closed";
 
-    // List of state keys
-    public static final String STATE_POWER = "BSH.Common.Setting.PowerState";
-    public static final String STATE_DOOR = "BSH.Common.Status.DoorState";
-    public static final String STATE_OPERATION = "BSH.Common.Status.OperationState";
-    public static final String STATE_REMOTE_START = "BSH.Common.Status.RemoteControlStartAllowed";
-    public static final String STATE_REMOTE_CONTROL = "BSH.Common.Status.RemoteControlActive";
-    public static final String STATE_ACTIVE_PROGRAM = "BSH.Common.Root.ActiveProgram";
-    public static final String STATE_CURRENT_CAVITY_TEMPERATURE = "Cooking.Oven.Status.CurrentCavityTemperature";
-
-    // List of options
+    // List of program options
     public static final String OPTION_REMAINING_PROGRAM_TIME = "BSH.Common.Option.RemainingProgramTime";
     public static final String OPTION_PROGRAM_PROGRESS = "BSH.Common.Option.ProgramProgress";
     public static final String OPTION_ELAPSED_PROGRAM_TIME = "BSH.Common.Option.ElapsedProgramTime";
-    public static final String OPTION_OVEN_CAVITY_TEMPERATURE = "Cooking.Oven.Status.CurrentCavityTemperature";
     public static final String OPTION_SETPOINT_TEMPERATURE = "Cooking.Oven.Option.SetpointTemperature";
     public static final String OPTION_DURATION = "BSH.Common.Option.Duration";
 

@@ -6,10 +6,11 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.homeconnect.handler;
+package org.openhab.binding.homeconnect.internal.handler;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
+import org.openhab.binding.homeconnect.handler.HomeConnectBridgeHandler;
 import org.openhab.binding.homeconnect.internal.client.HomeConnectApiClient;
 
 /**

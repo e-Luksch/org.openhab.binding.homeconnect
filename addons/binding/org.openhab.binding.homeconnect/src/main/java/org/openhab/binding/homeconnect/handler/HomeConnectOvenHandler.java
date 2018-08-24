@@ -21,6 +21,7 @@ import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.homeconnect.internal.client.model.Option;
 import org.openhab.binding.homeconnect.internal.client.model.Program;
+import org.openhab.binding.homeconnect.internal.handler.AbstractHomeConnectThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,7 @@ public class HomeConnectOvenHandler extends AbstractHomeConnectThingHandler {
                 defaultBooleanEventHandler(CHANNEL_REMOTE_START_ALLOWANCE_STATE));
         registerEventHandler(EVENT_REMAINING_PROGRAM_TIME, defaultRemainingProgramTimeEventHandler());
         registerEventHandler(EVENT_PROGRAM_PROGRESS, defaultProgramProgressEventHandler());
+        registerEventHandler(EVENT_SELECTED_PROGRAM, defaultSelectedProgramStateEventHandler());
 
         // register oven specific SSE event handlers
         registerEventHandler(EVENT_OVEN_CAVITY_TEMPERATURE, event -> {
@@ -79,12 +81,6 @@ public class HomeConnectOvenHandler extends AbstractHomeConnectThingHandler {
                 if (event.getValue() == null) {
                     resetProgramStateChannels();
                 }
-            });
-        });
-        registerEventHandler(EVENT_SELECTED_PROGRAM, event -> {
-            getThingChannel(CHANNEL_SELECTED_PROGRAM_STATE).ifPresent(channel -> {
-                updateState(channel.getUID(),
-                        event.getValue() == null ? UnDefType.NULL : new StringType(mapStringType(event.getValue())));
             });
         });
         registerEventHandler(EVENT_SETPOINT_TEMPERATURE, event -> {

@@ -26,6 +26,7 @@ import org.openhab.binding.homeconnect.internal.client.HomeConnectApiClient;
 import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.configuration.ApiBridgeConfiguration;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectApiClientListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -6,7 +6,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.homeconnect.handler;
+package org.openhab.binding.homeconnect.internal.handler;
 
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
@@ -183,7 +183,7 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
     }
 
     protected Optional<Channel> getThingChannel(String channelId) {
-        return Optional.of(getThing().getChannel(channelId));
+        return Optional.ofNullable(getThing().getChannel(channelId));
     }
 
     /**
@@ -325,6 +325,15 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
         return event -> {
             getThingChannel(CHANNEL_REMAINING_PROGRAM_TIME_STATE).ifPresent(channel -> updateState(channel.getUID(),
                     event.getValueAsInt() == 0 ? UnDefType.NULL : new DecimalType(event.getValueAsInt())));
+        };
+    }
+
+    protected EventHandler defaultSelectedProgramStateEventHandler() {
+        return event -> {
+            getThingChannel(CHANNEL_SELECTED_PROGRAM_STATE).ifPresent(channel -> {
+                updateState(channel.getUID(),
+                        event.getValue() == null ? UnDefType.NULL : new StringType(mapStringType(event.getValue())));
+            });
         };
     }
 
