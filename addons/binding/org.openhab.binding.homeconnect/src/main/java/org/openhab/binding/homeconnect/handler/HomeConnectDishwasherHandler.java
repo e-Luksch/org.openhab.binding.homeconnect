@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The {@link HomeConnectDishwasherHandler} is responsible for handling commands, which are
- * sent to one of the channels.
+ * sent to one of the channels of a dishwasher.
  *
  * @author Jonas Brüstel - Initial contribution
  */

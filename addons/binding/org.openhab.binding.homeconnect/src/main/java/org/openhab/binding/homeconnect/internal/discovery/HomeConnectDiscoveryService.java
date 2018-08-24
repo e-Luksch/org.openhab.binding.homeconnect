@@ -10,7 +10,6 @@ package org.openhab.binding.homeconnect.internal.discovery;
 
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +21,7 @@ import org.eclipse.smarthome.config.discovery.AbstractDiscoveryService;
 import org.eclipse.smarthome.config.discovery.DiscoveryResult;
 import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.core.thing.Thing;
+import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BridgeHandler;
 import org.openhab.binding.homeconnect.handler.HomeConnectBridgeHandler;
@@ -50,7 +50,7 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
      * @param bridgeHandler
      */
     public HomeConnectDiscoveryService(@NonNull HomeConnectBridgeHandler bridgeHandler) {
-        super(Collections.singleton(THING_TYPE_DISHWASHER), SEARCH_TIME, true);
+        super(DISCOVERABLE_DEVICE_THING_TYPES_UIDS, SEARCH_TIME, true);
         this.bridgeHandler = bridgeHandler;
     }
 
@@ -70,8 +70,9 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
                     for (HomeAppliance appliance : appliances) {
                         if (alreadyExists(appliance.getHaId())) {
                             logger.debug("[{}] '{}' already added as thing.", appliance.getHaId(), appliance.getType());
-                        } else if (THING_TYPE_DISHWASHER.getId().equalsIgnoreCase(appliance.getType())) {
-                            logger.info("[{}] Found dishwasher.", appliance.getHaId());
+                        } else if (THING_TYPE_DISHWASHER.getId().equalsIgnoreCase(appliance.getType())
+                                || THING_TYPE_OVEN.getId().equalsIgnoreCase(appliance.getType())) {
+                            logger.info("[{}] Found {}.", appliance.getHaId(), appliance.getType().toUpperCase());
                             bridgeHandler.getThing().getThings().forEach(thing -> thing.getProperties().get(HA_ID));
 
                             Map<String, Object> properties = new HashMap<>();
@@ -79,10 +80,12 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
                             String name = appliance.getBrand() + " " + appliance.getName() + " (" + appliance.getHaId()
                                     + ")";
 
+                            ThingTypeUID thingTypeUID = THING_TYPE_DISHWASHER.getId()
+                                    .equalsIgnoreCase(appliance.getType()) ? THING_TYPE_DISHWASHER : THING_TYPE_OVEN;
+
                             DiscoveryResult discoveryResult = DiscoveryResultBuilder
-                                    .create(new ThingUID(THING_TYPE_DISHWASHER.getBindingId(),
-                                            THING_TYPE_DISHWASHER.getId(), appliance.getHaId()))
-                                    .withThingType(THING_TYPE_DISHWASHER).withProperties(properties)
+                                    .create(new ThingUID(BINDING_ID, appliance.getType(), appliance.getHaId()))
+                                    .withThingType(thingTypeUID).withProperties(properties)
                                     .withBridge(bridgeHandler.getThing().getUID()).withLabel(name).build();
                             thingDiscovered(discoveryResult);
                         } else {

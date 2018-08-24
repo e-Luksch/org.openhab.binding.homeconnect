@@ -59,6 +59,8 @@ public class HomeConnectApiClient {
     private final static String ACCEPT = "Accept";
     private final static String BSH_JSON_V1 = "application/vnd.bsh.sdk.v1+json";
     private final static String KEEP_ALIVE = "KEEP-ALIVE";
+    private final static String DISCONNECTED = "DISCONNECTED";
+    private final static String CONNECTED = "CONNECTED";
     private final static String AUTH_DEFAULT_REDIRECT_URL = "https://apiclient.home-connect.com/o2c.html";
     private final static String AUTH_URI_PATH = "/security/oauth/authorize";
     private final static String AUTH_CLIENT_ID = "client_id";
@@ -249,6 +251,18 @@ public class HomeConnectApiClient {
     }
 
     /**
+     * Get selected program of device.
+     *
+     * @param haId home appliance id
+     * @return {@link Data} or null in case of communication error or if there is no selected program
+     * @throws CommunicationException
+     * @throws ConfigurationException
+     */
+    public Program getSelectedProgram(String haId) throws ConfigurationException, CommunicationException {
+        return getProgram(haId, "/api/homeappliances/" + haId + "/programs/selected");
+    }
+
+    /**
      * Register {@link ServerSentEventListener} to receive SSE events by Home Conncet API. This helps to reduce the
      * amount of request you would usually need to update all channels.
      *
@@ -294,6 +308,14 @@ public class HomeConnectApiClient {
                                 listener.onEvent(e);
                             }
                         }));
+                    }
+
+                    if (CONNECTED.equals(event) || DISCONNECTED.equals(event)) {
+                        eventListeners.forEach(listener -> {
+                            if (listener.haId().equals(haId)) {
+                                listener.onEvent(new Event(event, null, null));
+                            }
+                        });
                     }
                 }
 
