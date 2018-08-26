@@ -5,7 +5,7 @@ It uses the Home Connect API to connect to household devices (Bosch and Siemens)
 
 As all status updates and commands have to go through the API, a permanent internet connection is required.
 
-Supported devices: dishwasher
+Supported devices: dishwasher, oven
 
 ## Supported Things
 
@@ -15,7 +15,7 @@ The __Home Connect API__ is responsible for the communication with the Home Conn
 
 ### Devices
 
-Currently only dishwashers are supported.
+Currently dishwashers and ovens are supported.
 
 ## Discovery
 
@@ -27,15 +27,21 @@ After the bridge has been added, devices are discovered automatically.
 | Channel Type ID | Item Type    | Description  | Available on thing |
 | --------------- | ------------ | ------------ | ------------------ |
 | power_state | Switch | This setting describes the current power state of the home appliance. | dishwasher | 
-| door_state | Contact | This status describes the state of the door of the home appliance. A change of that status is either triggered by the user operating the home appliance locally (i.e. opening/closing door) or automatically by the home appliance (i.e. locking the door). | dishwasher | 
-| operation_state | String | This status describes the operation state of the home appliance. | dishwasher | 
-| remote_start_allowance_state | Switch | This status indicates whether the remote program start is enabled. This can happen due to a programmatic change (only disabling), or manually by the user changing the flag locally on the home appliance, or automatically after a certain duration - usually 24 hours. | dishwasher | 
-| remote_control_active_state | Switch | This status indicates whether the allowance for remote controlling is enabled. | dishwasher | 
-| active_program_state | String | This status describes the active program of the home appliance. | dishwasher | 
-| remaining_program_time_state | Number | This status indicates the remaining program time (in seconds) of the home appliance. | dishwasher | 
-| program_progress_state | Number | This status describes the program progress of the home appliance. | dishwasher | 
-
-
+| power_state_read_only | Switch | This setting describes the current power state of the home appliance (read only). | oven | 
+| door_state | Contact | This status describes the state of the door of the home appliance. A change of that status is either triggered by the user operating the home appliance locally (i.e. opening/closing door) or automatically by the home appliance (i.e. locking the door). | dishwasher, oven | 
+| operation_state | String | This status describes the operation state of the home appliance. | dishwasher, oven | 
+| remote_start_allowance_state | Switch | This status indicates whether the remote program start is enabled. This can happen due to a programmatic change (only disabling), or manually by the user changing the flag locally on the home appliance, or automatically after a certain duration - usually 24 hours. | dishwasher, oven | 
+| remote_control_active_state | Switch | This status indicates whether the allowance for remote controlling is enabled. | dishwasher, oven | 
+| active_program_state | String | This status describes the active program of the home appliance. | dishwasher, oven | 
+| selected_program_state | String | This status describes the selected program of the home appliance. | dishwasher, oven | 
+| remaining_program_time_state | Number | This status indicates the remaining program time (in seconds) of the home appliance. | dishwasher, oven | 
+| elapsed_program_time | Number | This status indicates the elapsed program time (in seconds) of the home appliance. | oven | 
+| program_progress_state | Number | This status describes the program progress of the home appliance. | dishwasher, oven | 
+| duration | Number | This status describes the duration of the program of the home appliance. | oven | 
+| current_cavity_temperature | Number | This status describes the current cavity temperature of the home appliance. | oven | 
+| setpoint_temperature | Number | This status describes the setpoint/target temperature of the home appliance. | oven | 
+            
+            
 ## Thing Configuration
 
 ### Configuring the __Home Connect API__ Bridge
@@ -116,7 +122,7 @@ The Home Connect bridge can be configured in the Paper UI as follows:
     * __client secret:__ your application client secret
     * __simulator:__ false
     * __refresh token:__ token from previous step
-3. That's it! Now you can use autodiscovery to add dishwashers.
+3. That's it! Now you can use autodiscovery to add devices.
 
 #### Simulator
 
@@ -131,6 +137,6 @@ The Home Connect developer site allows you to use simulated appliances. You can 
         * __client secret:__ leave blank
         * __simulator:__ true
         * __refresh token:__ leave blank
-    3. That's it! Now you can use autodiscovery to add dishwashers.
+    3. That's it! Now you can use autodiscovery to add devices.
 
 
