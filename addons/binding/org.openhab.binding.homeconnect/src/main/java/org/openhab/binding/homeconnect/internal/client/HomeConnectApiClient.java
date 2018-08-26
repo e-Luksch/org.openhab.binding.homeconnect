@@ -337,6 +337,13 @@ public class HomeConnectApiClient {
                         logger.debug("[{}] SSE error.", haId, throwable);
                     }
 
+                    if (response != null && response.code() == HTTP_FORBIDDEN) {
+                        logger.warn(
+                                "[{}] Stopping SSE listener! Got FORBIDDEN response from server. Please check if you allowed to access this device.",
+                                haId);
+                        ret = false;
+                    }
+
                     if (response != null && response.code() == HTTP_UNAUTHORIZED) {
                         logger.error("SSE token became invalid --> close SSE");
 
