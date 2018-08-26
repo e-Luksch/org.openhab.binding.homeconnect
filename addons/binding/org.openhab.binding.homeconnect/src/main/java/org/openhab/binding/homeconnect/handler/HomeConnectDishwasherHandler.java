@@ -11,19 +11,15 @@ package org.openhab.binding.homeconnect.handler;
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
-import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.UnDefType;
-import org.openhab.binding.homeconnect.internal.client.HomeConnectApiClient;
 import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
-import org.openhab.binding.homeconnect.internal.client.listener.ServerSentEventListener;
 import org.openhab.binding.homeconnect.internal.client.model.Program;
 import org.openhab.binding.homeconnect.internal.handler.AbstractHomeConnectThingHandler;
 import org.slf4j.Logger;
@@ -39,12 +35,6 @@ import org.slf4j.LoggerFactory;
 public class HomeConnectDishwasherHandler extends AbstractHomeConnectThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(HomeConnectDishwasherHandler.class);
-
-    @Nullable
-    private HomeConnectApiClient client;
-
-    @Nullable
-    private ServerSentEventListener serverSentEventListener;
 
     public HomeConnectDishwasherHandler(Thing thing) {
         super(thing);
@@ -136,30 +126,6 @@ public class HomeConnectDishwasherHandler extends AbstractHomeConnectThingHandle
             } catch (ConfigurationException | CommunicationException e) {
                 logger.error("API communication problem!", e);
             }
-        }
-    }
-
-    @Override
-    public void initialize() {
-        // wait for bridge to be setup first
-        updateStatus(ThingStatus.OFFLINE);
-
-        // if handler configuration is updated, re-register Server Sent Event Listener
-        HomeConnectApiClient hcac = client;
-        if (hcac != null) {
-            if (serverSentEventListener != null) {
-                logger.debug("Thing configuration might have changed --> re-register Server Sent Events listener.");
-                hcac.unregisterEventListener(serverSentEventListener);
-                try {
-                    hcac.registerEventListener(serverSentEventListener);
-                } catch (ConfigurationException | CommunicationException e) {
-                    logger.error("API communication problem!", e);
-                }
-            }
-
-            // refresh values
-            updateChannels();
-            refreshConnectionStatus();
         }
     }
 

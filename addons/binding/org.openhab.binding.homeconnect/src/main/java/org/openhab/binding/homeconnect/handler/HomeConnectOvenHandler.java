@@ -17,7 +17,6 @@ import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Thing;
-import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.homeconnect.internal.client.model.Option;
 import org.openhab.binding.homeconnect.internal.client.model.Program;
@@ -59,12 +58,9 @@ public class HomeConnectOvenHandler extends AbstractHomeConnectThingHandler {
         registerEventHandler(EVENT_DISCONNECTED, event -> {
             getThingChannel(CHANNEL_POWER_STATE).ifPresent(channel -> updateState(channel.getUID(), OnOffType.OFF));
             resetAllChannels();
-            updateStatus(ThingStatus.OFFLINE);
         });
         registerEventHandler(EVENT_CONNECTED, event -> {
             getThingChannel(CHANNEL_POWER_STATE).ifPresent(channel -> updateState(channel.getUID(), OnOffType.ON));
-
-            updateStatus(ThingStatus.ONLINE);
 
             // revert active program states
             resetProgramStateChannels();

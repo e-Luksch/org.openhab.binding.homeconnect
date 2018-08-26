@@ -76,6 +76,8 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
         // if handler configuration is updated, re-register Server Sent Event Listener
         HomeConnectApiClient hcac = client;
         if (hcac != null) {
+            refreshConnectionStatus();
+
             if (serverSentEventListener != null) {
                 logger.debug("Thing configuration might have changed --> re-register Server Sent Events listener.");
                 hcac.unregisterEventListener(serverSentEventListener);
@@ -86,9 +88,7 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
                 }
             }
 
-            // refresh values
             updateChannels();
-            refreshConnectionStatus();
         }
     }
 
@@ -124,14 +124,28 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
 
     @Override
     public void refreshClient(@NonNull HomeConnectApiClient apiClient) {
+        HomeConnectApiClient oldClient = client;
+        client = apiClient;
+
+        if (refreshConnectionStatus()) {
+            updateChannels();
+        }
+
         // Only update client if new instance is passed
-        if (!apiClient.equals(client)) {
-            client = apiClient;
+        if (!apiClient.equals(oldClient)) {
             serverSentEventListener = new ServerSentEventListener() {
 
                 @Override
                 public void onEvent(Event event) {
                     logger.debug("[{}] {}", getThingHaId(), event);
+
+                    if (EVENT_DISCONNECTED.equals(event.getKey())) {
+                        updateStatus(ThingStatus.OFFLINE);
+                    } else {
+                        if (!ThingStatus.ONLINE.equals(getThing().getStatus())) {
+                            updateStatus(ThingStatus.ONLINE);
+                        }
+                    }
 
                     if (eventHandlers.containsKey(event.getKey())) {
                         eventHandlers.get(event.getKey()).handle(event);
@@ -152,10 +166,7 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
 
             try {
                 apiClient.registerEventListener(serverSentEventListener);
-                refreshConnectionStatus();
-                if (ThingStatus.ONLINE.equals(getThing().getStatus())) {
-                    updateChannels();
-                }
+                updateChannels();
             } catch (ConfigurationException | CommunicationException e) {
                 logger.error("API communication problem!", e);
             }
@@ -197,6 +208,11 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
             return;
         }
 
+        if (ThingStatus.OFFLINE.equals(getThing().getStatus())) {
+            logger.debug("{} offline. Stopping update of channels.", getThing().getLabel());
+            return;
+        }
+
         List<Channel> channels = getThing().getChannels();
         for (Channel channel : channels) {
             updateChannel(channel.getUID());
@@ -219,6 +235,11 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
         Bridge bridge = getBridge();
         if (bridge == null || ThingStatus.OFFLINE.equals(bridge.getStatus())) {
             logger.warn("BridgeHandler not found or offline. Stopping update of channel {}.", channelUID);
+            return;
+        }
+
+        if (ThingStatus.OFFLINE.equals(getThing().getStatus())) {
+            logger.debug("{} offline. Stopping update of channel {}.", getThing().getLabel(), channelUID);
             return;
         }
 
@@ -257,8 +278,11 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
 
     /**
      * Check bridge status and refresh connection status of thing accordingly.
+     *
+     * @return status has changed
      */
-    protected void refreshConnectionStatus() {
+    protected boolean refreshConnectionStatus() {
+        ThingStatus oldStatus = getThing().getStatus();
         if (client != null) {
             try {
                 HomeAppliance homeAppliance = client.getHomeAppliance(getThingHaId());
@@ -275,6 +299,8 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
         } else {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_UNINITIALIZED);
         }
+
+        return !oldStatus.equals(getThing().getStatus());
     }
 
     /**
