@@ -32,6 +32,7 @@ public class HomeConnectBindingConstants {
     public static final ThingTypeUID THING_TYPE_API_BRIDGE = new ThingTypeUID(BINDING_ID, "api_bridge");
     public static final ThingTypeUID THING_TYPE_DISHWASHER = new ThingTypeUID(BINDING_ID, "dishwasher");
     public static final ThingTypeUID THING_TYPE_OVEN = new ThingTypeUID(BINDING_ID, "oven");
+    public static final ThingTypeUID THING_TYPE_WASHER = new ThingTypeUID(BINDING_ID, "washer");
 
     // SSE Event types
     public static final String EVENT_ELAPSED_PROGRAM_TIME = "BSH.Common.Option.ElapsedProgramTime";
@@ -49,6 +50,8 @@ public class HomeConnectBindingConstants {
     public static final String EVENT_PROGRAM_PROGRESS = "BSH.Common.Option.ProgramProgress";
     public static final String EVENT_SETPOINT_TEMPERATURE = "Cooking.Oven.Option.SetpointTemperature";
     public static final String EVENT_DURATION = "BSH.Common.Option.Duration";
+    public static final String EVENT_WASHER_TEMPERATURE = "LaundryCare.Washer.Option.Temperature";
+    public static final String EVENT_WASHER_SPIN_SPEED = "LaundryCare.Washer.Option.SpinSpeed";
 
     // Channel IDs
     public static final String CHANNEL_DOOR_STATE = "door_state";
@@ -64,14 +67,17 @@ public class HomeConnectBindingConstants {
     public static final String CHANNEL_OVEN_CURRENT_CAVITY_TEMPERATURE = "oven_current_cavity_temperature";
     public static final String CHANNEL_SETPOINT_TEMPERATURE = "setpoint_temperature";
     public static final String CHANNEL_DURATION = "duration";
+    public static final String CHANNEL_WASHER_TEMPERATURE = "laundry_care_washer_temperature";
+    public static final String CHANNEL_WASHER_SPIN_SPEED = "laundry_care_washer_spin_speed";
 
     // List of all supported devices
     public static final Set<ThingTypeUID> SUPPORTED_DEVICE_THING_TYPES_UIDS = Stream
-            .of(THING_TYPE_API_BRIDGE, THING_TYPE_DISHWASHER, THING_TYPE_OVEN).collect(Collectors.toSet());
+            .of(THING_TYPE_API_BRIDGE, THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER)
+            .collect(Collectors.toSet());
 
     // Discoverable devices
     public static final Set<ThingTypeUID> DISCOVERABLE_DEVICE_THING_TYPES_UIDS = Stream
-            .of(THING_TYPE_DISHWASHER, THING_TYPE_OVEN).collect(Collectors.toSet());
+            .of(THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER).collect(Collectors.toSet());
 
     // List of state values
     public static final String STATE_POWER_OFF = "BSH.Common.EnumType.PowerState.Off";
@@ -87,5 +93,7 @@ public class HomeConnectBindingConstants {
     public static final String OPTION_ELAPSED_PROGRAM_TIME = "BSH.Common.Option.ElapsedProgramTime";
     public static final String OPTION_SETPOINT_TEMPERATURE = "Cooking.Oven.Option.SetpointTemperature";
     public static final String OPTION_DURATION = "BSH.Common.Option.Duration";
+    public static final String OPTION_WASHER_TEMPERATURE = "LaundryCare.Washer.Option.Temperature";
+    public static final String OPTION_WASHER_SPIN_SPEED = "LaundryCare.Washer.Option.SpinSpeed";
 
 }

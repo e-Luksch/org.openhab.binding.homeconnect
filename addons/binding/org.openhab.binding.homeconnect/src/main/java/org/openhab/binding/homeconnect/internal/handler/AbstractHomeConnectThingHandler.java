@@ -37,6 +37,7 @@ import org.openhab.binding.homeconnect.internal.client.listener.ServerSentEventL
 import org.openhab.binding.homeconnect.internal.client.model.Data;
 import org.openhab.binding.homeconnect.internal.client.model.Event;
 import org.openhab.binding.homeconnect.internal.client.model.HomeAppliance;
+import org.openhab.binding.homeconnect.internal.client.model.Program;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,8 +250,6 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
             } catch (ConfigurationException | CommunicationException e) {
                 logger.error("API communication problem while trying to update {}!", getThingHaId(), e);
             }
-        } else {
-            logger.warn("[{}] No handlers to update channel \"{}\" found!", getThingHaId(), channelUID.getId());
         }
     }
 
@@ -413,6 +412,17 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
     protected ChannelUpdateHandler defaultRemoteStartAllowanceChannelUpdateHandler() {
         return (channelUID, client) -> {
             updateState(channelUID, client.isRemoteControlStartAllowed(getThingHaId()) ? OnOffType.ON : OnOffType.OFF);
+        };
+    }
+
+    protected ChannelUpdateHandler defaultSelectedProgramStateUpdateHandler() {
+        return (channelUID, client) -> {
+            Program program = client.getSelectedProgram(getThingHaId());
+            if (program != null && program.getKey() != null) {
+                updateState(channelUID, new StringType(mapStringType(program.getKey())));
+            } else {
+                updateState(channelUID, UnDefType.NULL);
+            }
         };
     }
 

@@ -86,6 +86,32 @@
 		</config-description>
 	</thing-type>
 
+	<!-- Washer -->
+	<thing-type id="washer">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="api_bridge" />
+		</supported-bridge-type-refs>
+		<label>Washer</label>
+		<description>Home Connect connected washing machine (e.g. Bosch or Siemens).</description>
+		<channels>
+			<channel id="door_state" typeId="door_state" />
+			<channel id="operation_state" typeId="operation_state" />
+			<channel id="remote_start_allowance_state" typeId="remote_start_allowance_state" />
+			<channel id="remote_control_active_state" typeId="remote_control_active_state" />
+			<channel id="active_program_state" typeId="active_program_state" />
+			<channel id="selected_program_state" typeId="selected_program_state" />
+			<channel id="remaining_program_time_state" typeId="remaining_program_time_state" />
+			<channel id="program_progress_state" typeId="program_progress_state" />
+			<channel id="laundry_care_washer_temperature" typeId="laundry_care_washer_temperature" />
+			<channel id="laundry_care_washer_spin_speed" typeId="laundry_care_washer_spin_speed" />
+		</channels>
+		<config-description>
+			<parameter name="haId" type="text" required="true">
+				<label>haId</label>
+				<description>Unique identifier representing a specific home appliance.</description>
+			</parameter>
+		</config-description>
+	</thing-type>
 
 	<!-- Channel types -->
 	<channel-type id="power_state">
@@ -177,5 +203,14 @@
 		<description>This status describes the duration of the program of the home appliance.</description>
 		<state pattern="%d s" readOnly="true"></state>
 	</channel-type>
-
+	<channel-type id="laundry_care_washer_temperature">
+		<item-type>String</item-type>
+		<label>Washing Program Temperature</label>
+		<description>This status describes the temperature of the washing program of the home appliance.</description>
+	</channel-type>
+	<channel-type id="laundry_care_washer_spin_speed">
+		<item-type>String</item-type>
+		<label>Spin Speed</label>
+		<description>This status defines the spin speed of a washer program of the home appliance.</description>
+	</channel-type>
 </thing:thing-descriptions>

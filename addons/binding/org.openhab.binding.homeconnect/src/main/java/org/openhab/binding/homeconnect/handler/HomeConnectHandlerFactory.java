@@ -62,6 +62,8 @@ public class HomeConnectHandlerFactory extends BaseThingHandlerFactory {
             return new HomeConnectDishwasherHandler(thing);
         } else if (THING_TYPE_OVEN.equals(thingTypeUID)) {
             return new HomeConnectOvenHandler(thing);
+        } else if (THING_TYPE_WASHER.equals(thingTypeUID)) {
+            return new HomeConnectWasherHandler(thing);
         }
 
         return null;

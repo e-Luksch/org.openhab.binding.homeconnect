@@ -71,7 +71,8 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
                         if (alreadyExists(appliance.getHaId())) {
                             logger.debug("[{}] '{}' already added as thing.", appliance.getHaId(), appliance.getType());
                         } else if (THING_TYPE_DISHWASHER.getId().equalsIgnoreCase(appliance.getType())
-                                || THING_TYPE_OVEN.getId().equalsIgnoreCase(appliance.getType())) {
+                                || THING_TYPE_OVEN.getId().equalsIgnoreCase(appliance.getType())
+                                || THING_TYPE_WASHER.getId().equalsIgnoreCase(appliance.getType())) {
                             logger.info("[{}] Found {}.", appliance.getHaId(), appliance.getType().toUpperCase());
                             bridgeHandler.getThing().getThings().forEach(thing -> thing.getProperties().get(HA_ID));
 
@@ -80,8 +81,14 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
                             String name = appliance.getBrand() + " " + appliance.getName() + " (" + appliance.getHaId()
                                     + ")";
 
-                            ThingTypeUID thingTypeUID = THING_TYPE_DISHWASHER.getId()
-                                    .equalsIgnoreCase(appliance.getType()) ? THING_TYPE_DISHWASHER : THING_TYPE_OVEN;
+                            ThingTypeUID thingTypeUID;
+                            if (THING_TYPE_DISHWASHER.getId().equalsIgnoreCase(appliance.getType())) {
+                                thingTypeUID = THING_TYPE_DISHWASHER;
+                            } else if (THING_TYPE_OVEN.getId().equalsIgnoreCase(appliance.getType())) {
+                                thingTypeUID = THING_TYPE_OVEN;
+                            } else {
+                                thingTypeUID = THING_TYPE_WASHER;
+                            }
 
                             DiscoveryResult discoveryResult = DiscoveryResultBuilder
                                     .create(new ThingUID(BINDING_ID, appliance.getType(), appliance.getHaId()))
