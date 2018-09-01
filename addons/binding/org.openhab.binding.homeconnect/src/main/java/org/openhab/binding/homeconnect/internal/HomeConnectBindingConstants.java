@@ -33,6 +33,7 @@ public class HomeConnectBindingConstants {
     public static final ThingTypeUID THING_TYPE_DISHWASHER = new ThingTypeUID(BINDING_ID, "dishwasher");
     public static final ThingTypeUID THING_TYPE_OVEN = new ThingTypeUID(BINDING_ID, "oven");
     public static final ThingTypeUID THING_TYPE_WASHER = new ThingTypeUID(BINDING_ID, "washer");
+    public static final ThingTypeUID THING_TYPE_FRIDGE_FREEZER = new ThingTypeUID(BINDING_ID, "fridgefreezer");
 
     // SSE Event types
     public static final String EVENT_ELAPSED_PROGRAM_TIME = "BSH.Common.Option.ElapsedProgramTime";
@@ -52,6 +53,10 @@ public class HomeConnectBindingConstants {
     public static final String EVENT_DURATION = "BSH.Common.Option.Duration";
     public static final String EVENT_WASHER_TEMPERATURE = "LaundryCare.Washer.Option.Temperature";
     public static final String EVENT_WASHER_SPIN_SPEED = "LaundryCare.Washer.Option.SpinSpeed";
+    public static final String EVENT_FREEZER_SETPOINT_TEMPERATURE = "Refrigeration.FridgeFreezer.Setting.SetpointTemperatureFreezer";
+    public static final String EVENT_FRIDGE_SETPOINT_TEMPERATURE = "Refrigeration.FridgeFreezer.Setting.SetpointTemperatureRefrigerator";
+    public static final String EVENT_FREEZER_SUPER_MODE = "Refrigeration.FridgeFreezer.Setting.SuperModeFreezer";
+    public static final String EVENT_FRIDGE_SUPER_MODE = "Refrigeration.FridgeFreezer.Setting.SuperModeRefrigerator";
 
     // Channel IDs
     public static final String CHANNEL_DOOR_STATE = "door_state";
@@ -69,15 +74,20 @@ public class HomeConnectBindingConstants {
     public static final String CHANNEL_DURATION = "duration";
     public static final String CHANNEL_WASHER_TEMPERATURE = "laundry_care_washer_temperature";
     public static final String CHANNEL_WASHER_SPIN_SPEED = "laundry_care_washer_spin_speed";
+    public static final String CHANNEL_REFRIDGERATOR_SETPOINT_TEMPERATURE = "setpoint_temperature_refridgerator";
+    public static final String CHANNEL_REFRIDGERATOR_SUPER_MODE = "super_mode_refrigerator";
+    public static final String CHANNEL_FREEZER_SETPOINT_TEMPERATURE = "setpoint_temperature_freezer";
+    public static final String CHANNEL_FREEZER_SUPER_MODE = "super_mode_freezer";
 
     // List of all supported devices
-    public static final Set<ThingTypeUID> SUPPORTED_DEVICE_THING_TYPES_UIDS = Stream
-            .of(THING_TYPE_API_BRIDGE, THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER)
+    public static final Set<ThingTypeUID> SUPPORTED_DEVICE_THING_TYPES_UIDS = Stream.of(THING_TYPE_API_BRIDGE,
+            THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER, THING_TYPE_FRIDGE_FREEZER)
             .collect(Collectors.toSet());
 
     // Discoverable devices
     public static final Set<ThingTypeUID> DISCOVERABLE_DEVICE_THING_TYPES_UIDS = Stream
-            .of(THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER).collect(Collectors.toSet());
+            .of(THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER, THING_TYPE_FRIDGE_FREEZER)
+            .collect(Collectors.toSet());
 
     // List of state values
     public static final String STATE_POWER_OFF = "BSH.Common.EnumType.PowerState.Off";

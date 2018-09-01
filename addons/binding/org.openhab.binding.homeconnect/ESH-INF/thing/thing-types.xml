@@ -113,6 +113,28 @@
 		</config-description>
 	</thing-type>
 
+	<!-- Fridge Freezer -->
+	<thing-type id="fridgefreezer">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="api_bridge" />
+		</supported-bridge-type-refs>
+		<label>Refrigerator/Freezer</label>
+		<description>Home Connect connected refrigerator/freezer (e.g. Bosch or Siemens).</description>
+		<channels>
+			<channel id="door_state" typeId="door_state" />
+			<channel id="setpoint_temperature_refridgerator" typeId="setpoint_temperature_refridgerator" />
+			<channel id="super_mode_refrigerator" typeId="super_mode_refrigerator" />
+			<channel id="setpoint_temperature_freezer" typeId="setpoint_temperature_freezer" />
+			<channel id="super_mode_freezer" typeId="super_mode_freezer" />
+		</channels>
+		<config-description>
+			<parameter name="haId" type="text" required="true">
+				<label>haId</label>
+				<description>Unique identifier representing a specific home appliance.</description>
+			</parameter>
+		</config-description>
+	</thing-type>
+
 	<!-- Channel types -->
 	<channel-type id="power_state">
 		<item-type>Switch</item-type>
@@ -207,10 +229,40 @@
 		<item-type>String</item-type>
 		<label>Washing Program Temperature</label>
 		<description>This status describes the temperature of the washing program of the home appliance.</description>
+		<state readOnly="true" />
 	</channel-type>
 	<channel-type id="laundry_care_washer_spin_speed">
 		<item-type>String</item-type>
 		<label>Spin Speed</label>
 		<description>This status defines the spin speed of a washer program of the home appliance.</description>
+		<state readOnly="true" />
+	</channel-type>
+	<channel-type id="setpoint_temperature_refridgerator">
+		<item-type>Number</item-type>
+		<label>Refrigerator temperature</label>
+		<description>Target temperature of the refrigerator compartment (Range depends on appliance - common range 2 to 8°C).</description>
+		<state max="8" min="2" step="1" readOnly="false"></state>
+	</channel-type>
+	<channel-type id="setpoint_temperature_freezer">
+		<item-type>Number</item-type>
+		<label>Freezer temperature</label>
+		<description>Target temperature of the freezer compartment (Range depends on appliance - common range -16 to -24°C).</description>
+		<state max="-16" min="-24" step="1" readOnly="false"></state>
+	</channel-type>
+	<channel-type id="super_mode_refrigerator">
+		<item-type>Switch</item-type>
+		<label>Refrigerator super mode</label>
+		<description>The setting has no impact on setpoint temperatures but will make the fridge compartment cool to the
+			lowest possible temperature until it is disabled by the manually by the customer or by the HA because of a timeout.
+		</description>
+		<state readOnly="true" />
+	</channel-type>
+	<channel-type id="super_mode_freezer">
+		<item-type>Switch</item-type>
+		<label>Freezer super mode</label>
+		<description>This setting has no impact on setpoint temperatures but will make the freezer compartment cool to the
+			lowest possible temperature until it is disabled by the manually by the customer or by the home appliance because of
+			a timeout.</description>
+		<state readOnly="true" />
 	</channel-type>
 </thing:thing-descriptions>

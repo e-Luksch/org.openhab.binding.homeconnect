@@ -33,6 +33,14 @@ public class Data {
         return value;
     }
 
+    public int getValueAsInt() {
+        return value != null ? Integer.valueOf(getValue()).intValue() : 0;
+    }
+
+    public boolean getValueAsBoolean() {
+        return value != null ? Boolean.valueOf(getValue()).booleanValue() : false;
+    }
+
     @Override
     public String toString() {
         return "Data [name=" + name + ", value=" + value + "]";

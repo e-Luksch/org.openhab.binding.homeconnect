@@ -189,6 +189,80 @@ public class HomeConnectApiClient {
     }
 
     /**
+     * Get setpoint temperature of freezer
+     *
+     * @param haId home appliance id
+     * @return {@link Data} or null in case of communication error
+     * @throws ConfigurationException
+     * @throws CommunicationException
+     */
+    public Data getFreezerSetpointTemperature(String haId) throws ConfigurationException, CommunicationException {
+        return getSetting(haId, "Refrigeration.FridgeFreezer.Setting.SetpointTemperatureFreezer");
+    }
+
+    /**
+     * Set setpoint temperature of freezer
+     *
+     * @param haId  home appliance id
+     * @param state new temperature
+     * @throws ConfigurationException
+     * @throws CommunicationException
+     */
+    public void setFreezerSetpointTemperature(String haId, String state)
+            throws ConfigurationException, CommunicationException {
+        putSettings(haId, new Data("Refrigeration.FridgeFreezer.Setting.SetpointTemperatureFreezer", state), true);
+    }
+
+    /**
+     * Get setpoint temperature of fridge
+     *
+     * @param haId home appliance id
+     * @return {@link Data} or null in case of communication error
+     * @throws ConfigurationException
+     * @throws CommunicationException
+     */
+    public Data getFridgeSetpointTemperature(String haId) throws ConfigurationException, CommunicationException {
+        return getSetting(haId, "Refrigeration.FridgeFreezer.Setting.SetpointTemperatureRefrigerator");
+    }
+
+    /**
+     * Set setpoint temperature of fridge
+     *
+     * @param haId  home appliance id
+     * @param state new temperature
+     * @throws ConfigurationException
+     * @throws CommunicationException
+     */
+    public void setFridgeSetpointTemperature(String haId, String state)
+            throws ConfigurationException, CommunicationException {
+        putSettings(haId, new Data("Refrigeration.FridgeFreezer.Setting.SetpointTemperatureRefrigerator", state), true);
+    }
+
+    /**
+     * Get fridge super mode
+     *
+     * @param haId home appliance id
+     * @return {@link Data} or null in case of communication error
+     * @throws ConfigurationException
+     * @throws CommunicationException
+     */
+    public Data getFridgeSuperMode(String haId) throws ConfigurationException, CommunicationException {
+        return getSetting(haId, "Refrigeration.FridgeFreezer.Setting.SuperModeRefrigerator");
+    }
+
+    /**
+     * Get freezer super mode
+     *
+     * @param haId home appliance id
+     * @return {@link Data} or null in case of communication error
+     * @throws ConfigurationException
+     * @throws CommunicationException
+     */
+    public Data getFreezerSuperMode(String haId) throws ConfigurationException, CommunicationException {
+        return getSetting(haId, "Refrigeration.FridgeFreezer.Setting.SuperModeFreezer");
+    }
+
+    /**
      * Get door state of device.
      *
      * @param haId home appliance id
@@ -427,7 +501,12 @@ public class HomeConnectApiClient {
     }
 
     private void putSettings(String haId, Data data) throws ConfigurationException, CommunicationException {
-        putData(haId, "/api/homeappliances/" + haId + "/settings/" + data.getName(), data);
+        putSettings(haId, data, false);
+    }
+
+    private void putSettings(String haId, Data data, boolean asInt)
+            throws ConfigurationException, CommunicationException {
+        putData(haId, "/api/homeappliances/" + haId + "/settings/" + data.getName(), data, asInt);
     }
 
     private Data getStatus(String haId, String status) throws ConfigurationException, CommunicationException {
@@ -481,11 +560,15 @@ public class HomeConnectApiClient {
         return null;
     }
 
-    private synchronized void putData(String haId, String path, Data data)
+    private synchronized void putData(String haId, String path, Data data, boolean asInt)
             throws ConfigurationException, CommunicationException {
         JsonObject innerObject = new JsonObject();
         innerObject.addProperty("key", data.getName());
-        innerObject.addProperty("value", data.getValue());
+        if (asInt) {
+            innerObject.addProperty("value", Integer.valueOf(data.getValue()));
+        } else {
+            innerObject.addProperty("value", data.getValue());
+        }
         JsonObject dataObject = new JsonObject();
         dataObject.add("data", innerObject);
 
@@ -505,7 +588,7 @@ public class HomeConnectApiClient {
             logger.error("Token does not work!", e);
         } catch (InvalidTokenException e) {
             logger.debug("[putData({}, {}, {})] Retrying method.", haId, path, data);
-            putData(haId, path, data);
+            putData(haId, path, data, asInt);
         }
     }
 
