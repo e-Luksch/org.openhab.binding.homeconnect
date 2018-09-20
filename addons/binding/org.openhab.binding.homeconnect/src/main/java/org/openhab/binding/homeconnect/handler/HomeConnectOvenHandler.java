@@ -8,13 +8,14 @@
  */
 package org.openhab.binding.homeconnect.handler;
 
+import static org.eclipse.smarthome.core.library.unit.SmartHomeUnits.*;
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.types.UnDefType;
@@ -52,8 +53,8 @@ public class HomeConnectOvenHandler extends AbstractHomeConnectThingHandler {
 
         // register oven specific SSE event handlers
         registerEventHandler(EVENT_OVEN_CAVITY_TEMPERATURE, event -> {
-            getThingChannel(CHANNEL_OVEN_CURRENT_CAVITY_TEMPERATURE)
-                    .ifPresent(channel -> updateState(channel.getUID(), new DecimalType(event.getValueAsInt())));
+            getThingChannel(CHANNEL_OVEN_CURRENT_CAVITY_TEMPERATURE).ifPresent(channel -> updateState(channel.getUID(),
+                    new QuantityType<>(event.getValueAsInt(), mapTemperature(event.getUnit()))));
         });
         registerEventHandler(EVENT_DISCONNECTED, event -> {
             getThingChannel(CHANNEL_POWER_STATE).ifPresent(channel -> updateState(channel.getUID(), OnOffType.OFF));
@@ -95,12 +96,12 @@ public class HomeConnectOvenHandler extends AbstractHomeConnectThingHandler {
             });
         });
         registerEventHandler(EVENT_SETPOINT_TEMPERATURE, event -> {
-            getThingChannel(CHANNEL_SETPOINT_TEMPERATURE)
-                    .ifPresent(channel -> updateState(channel.getUID(), new DecimalType(event.getValueAsInt())));
+            getThingChannel(CHANNEL_SETPOINT_TEMPERATURE).ifPresent(channel -> updateState(channel.getUID(),
+                    new QuantityType<>(event.getValueAsInt(), mapTemperature(event.getUnit()))));
         });
         registerEventHandler(EVENT_DURATION, event -> {
-            getThingChannel(CHANNEL_DURATION)
-                    .ifPresent(channel -> updateState(channel.getUID(), new DecimalType(event.getValueAsInt())));
+            getThingChannel(CHANNEL_DURATION).ifPresent(
+                    channel -> updateState(channel.getUID(), new QuantityType<>(event.getValueAsInt(), SECOND)));
         });
 
         // register default update handlers
@@ -124,17 +125,18 @@ public class HomeConnectOvenHandler extends AbstractHomeConnectThingHandler {
                             getThingChannel(CHANNEL_REMAINING_PROGRAM_TIME_STATE)
                                     .ifPresent(channel -> updateState(channel.getUID(),
                                             option.getValueAsInt() == 0 ? UnDefType.NULL
-                                                    : new DecimalType(option.getValueAsInt())));
+                                                    : new QuantityType<>(option.getValueAsInt(), SECOND)));
                             break;
                         case OPTION_PROGRAM_PROGRESS:
                             getThingChannel(CHANNEL_PROGRAM_PROGRESS_STATE)
                                     .ifPresent(channel -> updateState(channel.getUID(),
                                             option.getValueAsInt() == 100 ? UnDefType.NULL
-                                                    : new DecimalType(option.getValueAsInt())));
+                                                    : new QuantityType<>(option.getValueAsInt(), PERCENT)));
                             break;
                         case OPTION_ELAPSED_PROGRAM_TIME:
-                            getThingChannel(CHANNEL_ELAPSED_PROGRAM_TIME).ifPresent(
-                                    channel -> updateState(channel.getUID(), new DecimalType(option.getValueAsInt())));
+                            getThingChannel(CHANNEL_ELAPSED_PROGRAM_TIME)
+                                    .ifPresent(channel -> updateState(channel.getUID(),
+                                            new QuantityType<>(option.getValueAsInt(), SECOND)));
                             break;
                     }
                 });
@@ -149,7 +151,8 @@ public class HomeConnectOvenHandler extends AbstractHomeConnectThingHandler {
                 Optional<Option> option = program.getOptions().stream()
                         .filter(o -> o.getKey().equals(OPTION_SETPOINT_TEMPERATURE)).findFirst();
                 if (option.isPresent()) {
-                    updateState(channelUID, new DecimalType(option.get().getValueAsInt()));
+                    updateState(channelUID,
+                            new QuantityType<>(option.get().getValueAsInt(), mapTemperature(option.get().getUnit())));
                 } else {
                     updateState(channelUID, UnDefType.NULL);
                 }
@@ -161,7 +164,7 @@ public class HomeConnectOvenHandler extends AbstractHomeConnectThingHandler {
                 Optional<Option> option = program.getOptions().stream().filter(o -> o.getKey().equals(OPTION_DURATION))
                         .findFirst();
                 if (option.isPresent()) {
-                    updateState(channelUID, new DecimalType(option.get().getValueAsInt()));
+                    updateState(channelUID, new QuantityType<>(option.get().getValueAsInt(), SECOND));
                 } else {
                     updateState(channelUID, UnDefType.NULL);
                 }

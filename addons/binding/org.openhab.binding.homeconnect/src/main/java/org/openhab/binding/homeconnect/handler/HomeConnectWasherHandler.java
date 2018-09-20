@@ -8,10 +8,11 @@
  */
 package org.openhab.binding.homeconnect.handler;
 
+import static org.eclipse.smarthome.core.library.unit.SmartHomeUnits.*;
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.types.State;
@@ -99,13 +100,13 @@ public class HomeConnectWasherHandler extends AbstractHomeConnectThingHandler {
                             getThingChannel(CHANNEL_REMAINING_PROGRAM_TIME_STATE)
                                     .ifPresent(channel -> updateState(channel.getUID(),
                                             option.getValueAsInt() == 0 ? UnDefType.NULL
-                                                    : new DecimalType(option.getValueAsInt())));
+                                                    : new QuantityType<>(option.getValueAsInt(), SECOND)));
                             break;
                         case OPTION_PROGRAM_PROGRESS:
                             getThingChannel(CHANNEL_PROGRAM_PROGRESS_STATE)
                                     .ifPresent(channel -> updateState(channel.getUID(),
                                             option.getValueAsInt() == 100 ? UnDefType.NULL
-                                                    : new DecimalType(option.getValueAsInt())));
+                                                    : new QuantityType<>(option.getValueAsInt(), PERCENT)));
                             break;
                         case OPTION_WASHER_TEMPERATURE:
                             getThingChannel(CHANNEL_WASHER_TEMPERATURE).ifPresent(

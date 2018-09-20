@@ -8,17 +8,23 @@
  */
 package org.openhab.binding.homeconnect.internal.handler;
 
+import static org.eclipse.smarthome.core.library.unit.ImperialUnits.FAHRENHEIT;
+import static org.eclipse.smarthome.core.library.unit.SIUnits.CELSIUS;
+import static org.eclipse.smarthome.core.library.unit.SmartHomeUnits.*;
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.measure.Unit;
+import javax.measure.quantity.Temperature;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.OpenClosedType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Channel;
@@ -276,6 +282,16 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
     }
 
     /**
+     * Map unit string (returned by home connect api) to Unit
+     * 
+     * @param unit String eg. "°C"
+     * @return Unit
+     */
+    protected Unit<Temperature> mapTemperature(String unit) {
+        return !"°C".equalsIgnoreCase(unit) ? FAHRENHEIT : CELSIUS;
+    }
+
+    /**
      * Check bridge status and refresh connection status of thing accordingly.
      *
      * @return status has changed
@@ -313,8 +329,8 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
 
     protected EventHandler defaultElapsedProgramTimeEventHandler() {
         return event -> {
-            getThingChannel(CHANNEL_ELAPSED_PROGRAM_TIME)
-                    .ifPresent(channel -> updateState(channel.getUID(), new DecimalType(event.getValueAsInt())));
+            getThingChannel(CHANNEL_ELAPSED_PROGRAM_TIME).ifPresent(
+                    channel -> updateState(channel.getUID(), new QuantityType<>(event.getValueAsInt(), SECOND)));
         };
     }
 
@@ -349,7 +365,7 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
     protected EventHandler defaultRemainingProgramTimeEventHandler() {
         return event -> {
             getThingChannel(CHANNEL_REMAINING_PROGRAM_TIME_STATE).ifPresent(channel -> updateState(channel.getUID(),
-                    event.getValueAsInt() == 0 ? UnDefType.NULL : new DecimalType(event.getValueAsInt())));
+                    event.getValueAsInt() == 0 ? UnDefType.NULL : new QuantityType<>(event.getValueAsInt(), SECOND)));
         };
     }
 
@@ -364,8 +380,9 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
 
     protected EventHandler defaultProgramProgressEventHandler() {
         return event -> {
-            getThingChannel(CHANNEL_PROGRAM_PROGRESS_STATE).ifPresent(channel -> updateState(channel.getUID(),
-                    event.getValueAsInt() == 100 ? UnDefType.NULL : new DecimalType(event.getValueAsInt())));
+            getThingChannel(CHANNEL_PROGRAM_PROGRESS_STATE)
+                    .ifPresent(channel -> updateState(channel.getUID(), event.getValueAsInt() == 100 ? UnDefType.NULL
+                            : new QuantityType<>(event.getValueAsInt(), PERCENT)));
         };
     }
 

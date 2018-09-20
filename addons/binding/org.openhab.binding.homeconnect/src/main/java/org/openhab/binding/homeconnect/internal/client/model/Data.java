@@ -18,11 +18,13 @@ public class Data {
 
     private String name;
     private String value;
+    private String unit;
 
-    public Data(String name, String value) {
+    public Data(String name, String value, String unit) {
         super();
         this.name = name;
         this.value = value;
+        this.unit = unit;
     }
 
     public String getName() {
@@ -31,6 +33,10 @@ public class Data {
 
     public String getValue() {
         return value;
+    }
+
+    public String getUnit() {
+        return unit;
     }
 
     public int getValueAsInt() {
@@ -43,7 +49,7 @@ public class Data {
 
     @Override
     public String toString() {
-        return "Data [name=" + name + ", value=" + value + "]";
+        return "Data [name=" + name + ", value=" + value + ", unit=" + unit + "]";
     }
 
 }

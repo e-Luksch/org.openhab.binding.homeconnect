@@ -67,7 +67,8 @@ public class HomeConnectApiClient {
     private final static String AUTH_REDIRECT_URI = "redirect_uri";
     private final static String AUTH_SCOPE = "scope";
     private final static String AUTH_CODE_GRAND_SCOPE_VALUE = "IdentifyAppliance Monitor Settings";
-    private final static int REQUEST_READ_TIMEOUT = 90;
+    private final static int SSE_REQUEST_READ_TIMEOUT = 90;
+    private final static int REQUEST_READ_TIMEOUT = 30; // TODO
 
     private final Logger logger = LoggerFactory.getLogger(HomeConnectBridgeHandler.class);
     private OkHttpClient client;
@@ -92,12 +93,12 @@ public class HomeConnectApiClient {
         serverSentEvent = new HashMap<>();
 
         // setup http client
-        client = new OkHttpClient();
+        client = new OkHttpClient.Builder().readTimeout(REQUEST_READ_TIMEOUT, TimeUnit.SECONDS).build();
         apiUrl = simulated ? API_SIMULATOR_URL : API_URL;
 
         // configure Server Sent Event client
         // if no keep-alive events arrive within 90 seconds --> fail and try to reconnect
-        oksse = new OkSse(new OkHttpClient.Builder().readTimeout(REQUEST_READ_TIMEOUT, TimeUnit.SECONDS)
+        oksse = new OkSse(new OkHttpClient.Builder().readTimeout(SSE_REQUEST_READ_TIMEOUT, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(true).build());
     }
 
@@ -185,7 +186,7 @@ public class HomeConnectApiClient {
      * @throws ConfigurationException
      */
     public void setPowerState(String haId, String state) throws ConfigurationException, CommunicationException {
-        putSettings(haId, new Data("BSH.Common.Setting.PowerState", state));
+        putSettings(haId, new Data("BSH.Common.Setting.PowerState", state, null));
     }
 
     /**
@@ -208,9 +209,10 @@ public class HomeConnectApiClient {
      * @throws ConfigurationException
      * @throws CommunicationException
      */
-    public void setFreezerSetpointTemperature(String haId, String state)
+    public void setFreezerSetpointTemperature(String haId, String state, String unit)
             throws ConfigurationException, CommunicationException {
-        putSettings(haId, new Data("Refrigeration.FridgeFreezer.Setting.SetpointTemperatureFreezer", state), true);
+        putSettings(haId, new Data("Refrigeration.FridgeFreezer.Setting.SetpointTemperatureFreezer", state, unit),
+                true);
     }
 
     /**
@@ -233,9 +235,10 @@ public class HomeConnectApiClient {
      * @throws ConfigurationException
      * @throws CommunicationException
      */
-    public void setFridgeSetpointTemperature(String haId, String state)
+    public void setFridgeSetpointTemperature(String haId, String state, String unit)
             throws ConfigurationException, CommunicationException {
-        putSettings(haId, new Data("Refrigeration.FridgeFreezer.Setting.SetpointTemperatureRefrigerator", state), true);
+        putSettings(haId, new Data("Refrigeration.FridgeFreezer.Setting.SetpointTemperatureRefrigerator", state, unit),
+                true);
     }
 
     /**
@@ -569,6 +572,11 @@ public class HomeConnectApiClient {
         } else {
             innerObject.addProperty("value", data.getValue());
         }
+
+        if (data.getUnit() != null) {
+            innerObject.addProperty("unit", data.getUnit());
+        }
+
         JsonObject dataObject = new JsonObject();
         dataObject.add("data", innerObject);
 
@@ -800,7 +808,9 @@ public class HomeConnectApiClient {
 
         JsonObject data = responseObject.getAsJsonObject("data");
 
-        return new Data(data.get("key").getAsString(), data.get("value").getAsString());
+        String unit = data.get("unit") != null ? data.get("unit").getAsString() : null;
+
+        return new Data(data.get("key").getAsString(), data.get("value").getAsString(), unit);
     }
 
     private ArrayList<Event> mapToEvents(String json) {

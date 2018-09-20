@@ -34,16 +34,16 @@ After the bridge has been added, devices are discovered automatically.
 | remote_control_active_state | Switch | true  | This status indicates whether the allowance for remote controlling is enabled. | dishwasher, washer, oven | 
 | active_program_state | String | true  | This status describes the active program of the home appliance. | dishwasher, washer, oven | 
 | selected_program_state | String | true | This status describes the selected program of the home appliance. | dishwasher, washer, oven | 
-| remaining_program_time_state | Number | true | This status indicates the remaining program time (in seconds) of the home appliance. | dishwasher, washer, oven | 
-| elapsed_program_time | Number | true | This status indicates the elapsed program time (in seconds) of the home appliance. | oven | 
-| program_progress_state | Number | true | This status describes the program progress of the home appliance. | dishwasher, washer, oven | 
-| duration | Number | true | This status describes the duration of the program of the home appliance. | oven | 
-| current_cavity_temperature | Number | true | This status describes the current cavity temperature of the home appliance. | oven | 
-| setpoint_temperature | Number | true | This status describes the setpoint/target temperature of the home appliance. | oven | 
+| remaining_program_time_state | Number:Time | true | This status indicates the remaining program time of the home appliance. | dishwasher, washer, oven | 
+| elapsed_program_time | Number:Time | true | This status indicates the elapsed program time of the home appliance. | oven | 
+| program_progress_state | Number:Dimensionless | true | This status describes the program progress of the home appliance. | dishwasher, washer, oven | 
+| duration | Number:Time | true | This status describes the duration of the program of the home appliance. | oven | 
+| current_cavity_temperature | Number:Temperature | true | This status describes the current cavity temperature of the home appliance. | oven | 
+| setpoint_temperature | Number:Temperature | true | This status describes the setpoint/target temperature of the home appliance. | oven | 
 | laundry_care_washer_temperature | String | true | This status describes describes the temperature of the washing program of the home appliance. | washer | 
 | laundry_care_washer_spin_speed | String | true | This status defines the spin speed of a washer program of the home appliance. | washer | 
-| setpoint_temperature_refridgerator | Number | false | Target temperature of the refrigerator compartment (Range depends on appliance - common range 2 to 8°C). | refrigerator/freezer | 
-| setpoint_temperature_freezer | Number | false | Target temperature of the freezer compartment (Range depends on appliance - common range -16 to -24°C). | refrigerator/freezer | 
+| setpoint_temperature_refridgerator | Number:Temperature | false | Target temperature of the refrigerator compartment (Range depends on appliance - common range 2 to 8°C). | refrigerator/freezer | 
+| setpoint_temperature_freezer | Number:Temperature | false | Target temperature of the freezer compartment (Range depends on appliance - common range -16 to -24°C). | refrigerator/freezer | 
 | super_mode_refrigerator | Switch | true | The setting has no impact on setpoint temperatures but will make the fridge compartment cool to the lowest possible temperature until it is disabled by the manually by the customer or by the HA because of a timeout. | refrigerator/freezer | 
 | super_mode_freezer | Switch | true | This setting has no impact on setpoint temperatures but will make the freezer compartment cool to the lowest possible temperature until it is disabled by the manually by the customer or by the home appliance because of a timeout. | refrigerator/freezer | 
             

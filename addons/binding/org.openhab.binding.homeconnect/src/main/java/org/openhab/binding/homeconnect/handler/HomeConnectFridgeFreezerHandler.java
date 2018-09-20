@@ -10,9 +10,11 @@ package org.openhab.binding.homeconnect.handler;
 
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
+import javax.measure.quantity.Temperature;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.types.Command;
@@ -41,12 +43,13 @@ public class HomeConnectFridgeFreezerHandler extends AbstractHomeConnectThingHan
         // register SSE event handlers
         registerEventHandler(EVENT_DOOR_STATE, defaultDoorStateEventHandler());
         registerEventHandler(EVENT_FREEZER_SETPOINT_TEMPERATURE, event -> {
-            getThingChannel(CHANNEL_FREEZER_SETPOINT_TEMPERATURE)
-                    .ifPresent(channel -> updateState(channel.getUID(), new DecimalType(event.getValueAsInt())));
+            getThingChannel(CHANNEL_FREEZER_SETPOINT_TEMPERATURE).ifPresent(channel -> updateState(channel.getUID(),
+                    new QuantityType<>(event.getValueAsInt(), mapTemperature(event.getUnit()))));
         });
         registerEventHandler(EVENT_FRIDGE_SETPOINT_TEMPERATURE, event -> {
             getThingChannel(CHANNEL_REFRIDGERATOR_SETPOINT_TEMPERATURE)
-                    .ifPresent(channel -> updateState(channel.getUID(), new DecimalType(event.getValueAsInt())));
+                    .ifPresent(channel -> updateState(channel.getUID(),
+                            new QuantityType<>(event.getValueAsInt(), mapTemperature(event.getUnit()))));
         });
         registerEventHandler(EVENT_FREEZER_SUPER_MODE, defaultBooleanEventHandler(CHANNEL_FREEZER_SUPER_MODE));
         registerEventHandler(EVENT_FRIDGE_SUPER_MODE, defaultBooleanEventHandler(CHANNEL_REFRIDGERATOR_SUPER_MODE));
@@ -56,7 +59,7 @@ public class HomeConnectFridgeFreezerHandler extends AbstractHomeConnectThingHan
         registerChannelUpdateHandler(CHANNEL_FREEZER_SETPOINT_TEMPERATURE, (channelUID, client) -> {
             Data data = client.getFreezerSetpointTemperature(getThingHaId());
             if (data != null && data.getValue() != null) {
-                updateState(channelUID, new DecimalType(data.getValueAsInt()));
+                updateState(channelUID, new QuantityType<>(data.getValueAsInt(), mapTemperature(data.getUnit())));
             } else {
                 updateState(channelUID, UnDefType.NULL);
             }
@@ -64,7 +67,7 @@ public class HomeConnectFridgeFreezerHandler extends AbstractHomeConnectThingHan
         registerChannelUpdateHandler(CHANNEL_REFRIDGERATOR_SETPOINT_TEMPERATURE, (channelUID, client) -> {
             Data data = client.getFridgeSetpointTemperature(getThingHaId());
             if (data != null && data.getValue() != null) {
-                updateState(channelUID, new DecimalType(data.getValueAsInt()));
+                updateState(channelUID, new QuantityType<>(data.getValueAsInt(), mapTemperature(data.getUnit())));
             } else {
                 updateState(channelUID, UnDefType.NULL);
             }
@@ -93,12 +96,19 @@ public class HomeConnectFridgeFreezerHandler extends AbstractHomeConnectThingHan
         super.handleCommand(channelUID, command);
 
         try {
-            if (command instanceof DecimalType) {
+            if (command instanceof QuantityType) {
+                @SuppressWarnings("unchecked")
+                QuantityType<Temperature> quantity = ((QuantityType<Temperature>) command);
+
+                String unit = quantity.getUnit().toString();
+                String value = String.valueOf(quantity.intValue());
+
                 if (CHANNEL_REFRIDGERATOR_SETPOINT_TEMPERATURE.equals(channelUID.getId())) {
-                    getClient().setFridgeSetpointTemperature(getThingHaId(), command.toString());
+                    getClient().setFridgeSetpointTemperature(getThingHaId(), value, unit);
                 } else if (CHANNEL_FREEZER_SETPOINT_TEMPERATURE.equals(channelUID.getId())) {
-                    getClient().setFreezerSetpointTemperature(getThingHaId(), command.toString());
+                    getClient().setFreezerSetpointTemperature(getThingHaId(), value, unit);
                 }
+
             }
         } catch (ConfigurationException | CommunicationException e) {
             logger.error("API communication problem while trying to update {}!", getThingHaId(), e);

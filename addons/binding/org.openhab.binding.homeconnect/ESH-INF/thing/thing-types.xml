@@ -190,40 +190,40 @@
 		<state readOnly="true" />
 	</channel-type>
 	<channel-type id="remaining_program_time_state">
-		<item-type>Number</item-type>
+		<item-type>Number:Time</item-type>
 		<label>Remaining program time</label>
 		<description>This status indicates the remaining program time of the home appliance.</description>
-		<state pattern="%d s" readOnly="true"></state>
+		<state pattern="%d %unit%" readOnly="true"></state>
 	</channel-type>
 	<channel-type id="program_progress_state">
-		<item-type>Number</item-type>
+		<item-type>Number:Dimensionless</item-type>
 		<label>Progress State</label>
 		<description>This status describes the program progress of the home appliance.</description>
-		<state pattern="%d%%" readOnly="true"></state>
+		<state readOnly="true" min="0" max="100" pattern="%d %unit%" />
 	</channel-type>
 	<channel-type id="current_cavity_temperature">
-		<item-type>Number</item-type>
+		<item-type>Number:Temperature</item-type>
 		<label>Cavity Temperature</label>
 		<description>This status describes the oven cavity temperature of the home appliance.</description>
-		<state pattern="%d" readOnly="true"></state>
+		<state readOnly="true" pattern="%.0f %unit%" />
 	</channel-type>
 	<channel-type id="elapsed_program_time">
-		<item-type>Number</item-type>
+		<item-type>Number:Time</item-type>
 		<label>Elapsed Program Time</label>
 		<description>This status describes the elapsed program time of the home appliance.</description>
-		<state pattern="%d s" readOnly="true"></state>
+		<state pattern="%d %unit%" readOnly="true"></state>
 	</channel-type>
 	<channel-type id="setpoint_temperature">
-		<item-type>Number</item-type>
+		<item-type>Number:Temperature</item-type>
 		<label>Setpoint Temperature</label>
 		<description>This status describes the intended cooking compartment temperature of the home appliance.</description>
-		<state pattern="%d" readOnly="true"></state>
+		<state readOnly="true" pattern="%.0f %unit%" />
 	</channel-type>
 	<channel-type id="duration">
-		<item-type>Number</item-type>
+		<item-type>Number:Time</item-type>
 		<label>Selected duration</label>
 		<description>This status describes the duration of the program of the home appliance.</description>
-		<state pattern="%d s" readOnly="true"></state>
+		<state pattern="%d %unit%" readOnly="true"></state>
 	</channel-type>
 	<channel-type id="laundry_care_washer_temperature">
 		<item-type>String</item-type>
@@ -238,16 +238,16 @@
 		<state readOnly="true" />
 	</channel-type>
 	<channel-type id="setpoint_temperature_refridgerator">
-		<item-type>Number</item-type>
+		<item-type>Number:Temperature</item-type>
 		<label>Refrigerator temperature</label>
 		<description>Target temperature of the refrigerator compartment (Range depends on appliance - common range 2 to 8°C).</description>
-		<state max="8" min="2" step="1" readOnly="false"></state>
+		<state step="1" pattern="%.0f %unit%" readOnly="false"></state>
 	</channel-type>
 	<channel-type id="setpoint_temperature_freezer">
-		<item-type>Number</item-type>
+		<item-type>Number:Temperature</item-type>
 		<label>Freezer temperature</label>
 		<description>Target temperature of the freezer compartment (Range depends on appliance - common range -16 to -24°C).</description>
-		<state max="-16" min="-24" step="1" readOnly="false"></state>
+		<state step="1" pattern="%.0f %unit%" readOnly="false"></state>
 	</channel-type>
 	<channel-type id="super_mode_refrigerator">
 		<item-type>Switch</item-type>
