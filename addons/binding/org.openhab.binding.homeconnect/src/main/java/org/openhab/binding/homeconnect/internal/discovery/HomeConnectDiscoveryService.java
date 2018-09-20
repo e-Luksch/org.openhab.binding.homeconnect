@@ -73,6 +73,7 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
                         } else if (THING_TYPE_DISHWASHER.getId().equalsIgnoreCase(appliance.getType())
                                 || THING_TYPE_OVEN.getId().equalsIgnoreCase(appliance.getType())
                                 || THING_TYPE_WASHER.getId().equalsIgnoreCase(appliance.getType())
+                                || THING_TYPE_DRYER.getId().equalsIgnoreCase(appliance.getType())
                                 || THING_TYPE_FRIDGE_FREEZER.getId().equalsIgnoreCase(appliance.getType())) {
                             logger.info("[{}] Found {}.", appliance.getHaId(), appliance.getType().toUpperCase());
                             bridgeHandler.getThing().getThings().forEach(thing -> thing.getProperties().get(HA_ID));
@@ -89,6 +90,8 @@ public class HomeConnectDiscoveryService extends AbstractDiscoveryService {
                                 thingTypeUID = THING_TYPE_OVEN;
                             } else if (THING_TYPE_FRIDGE_FREEZER.getId().equalsIgnoreCase(appliance.getType())) {
                                 thingTypeUID = THING_TYPE_FRIDGE_FREEZER;
+                            } else if (THING_TYPE_DRYER.getId().equalsIgnoreCase(appliance.getType())) {
+                                thingTypeUID = THING_TYPE_DRYER;
                             } else {
                                 thingTypeUID = THING_TYPE_WASHER;
                             }
