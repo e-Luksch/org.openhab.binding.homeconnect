@@ -65,7 +65,7 @@ After the bridge has been added, devices are discovered automatically.
 2. Create an application at [https://developer.home-connect.com/applications](https://developer.home-connect.com/applications)
     * _Application ID_: e.g. `openhab-binding`
     * _OAuth Flow_: Device Flow
-    * _Home Connect User Account for Testing_: the associated user account from [Home Connect](https://www.home-connect.com/)
+    * _Home Connect User Account for Testing_: the associated user account email from [Home Connect](https://www.home-connect.com/) **_Please don't use your developer account username_**
 3. Now you should see the client id and secret of the application. Please save them for later.
 4. Use `curl` or equivalent method to start the authorization. Please replace `[client id]` with your application client id.
 
@@ -91,7 +91,7 @@ Response:
 ```
 Please save the `device_code` and the `verification_uri_complete` for later use.
 
-5. Open the `verification_uri_complete` link in a web browser. You can now login and grant access.
+5. Open the `verification_uri_complete` link in a web browser. You can now login with your [Home Connect](https://www.home-connect.com/) account and grant access. **_Please don't use your developer account credentials**
 6. Use `curl` or equivalent method to get the oAuth token. Please replace `[client id]` and `[client secret]` with your application credentials. For `[device code]` use response data from step 4. 
 
 Curl call:
