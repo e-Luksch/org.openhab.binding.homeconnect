@@ -71,6 +71,7 @@ After the bridge has been added, devices are discovered automatically.
 4. Use `curl` or equivalent method to start the authorization. Please replace `[client id]` with your application client id.
 
 Curl call:
+
 ```
 curl -X POST \
   https://api.home-connect.com/security/oauth/device_authorization \
@@ -80,6 +81,7 @@ curl -X POST \
 ```
 
 Response:
+
 ```
 {
     "expires_in": 300,
@@ -90,12 +92,14 @@ Response:
     "verification_uri_complete": "https://verify.home-connect.com?user_code=0123-4567"
 }
 ```
+
 Please save the `device_code` and the `verification_uri_complete` for later use.
 
 5. Open the `verification_uri_complete` link in a web browser. You can now login with your [Home Connect](https://www.home-connect.com/) account and grant access. **_Please don't use your developer account credentials**
 6. Use `curl` or equivalent method to get the oAuth token. Please replace `[client id]` and `[client secret]` with your application credentials. For `[device code]` use response data from step 4. 
 
 Curl call:
+
 ```
 curl -X POST \
   https://api.home-connect.com/security/oauth/token \
@@ -105,6 +109,7 @@ curl -X POST \
 ```
 
 Response:
+
 ```
 {
     "id_token": "xyz",

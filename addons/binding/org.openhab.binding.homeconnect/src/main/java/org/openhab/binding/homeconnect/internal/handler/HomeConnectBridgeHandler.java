@@ -6,7 +6,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.homeconnect.handler;
+package org.openhab.binding.homeconnect.internal.handler;
 
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
@@ -26,7 +26,6 @@ import org.openhab.binding.homeconnect.internal.client.HomeConnectApiClient;
 import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.configuration.ApiBridgeConfiguration;
-import org.openhab.binding.homeconnect.internal.handler.HomeConnectApiClientListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

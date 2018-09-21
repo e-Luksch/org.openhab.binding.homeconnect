@@ -13,8 +13,8 @@ Bundle-SymbolicName: org.openhab.binding.homeconnect;singleton:=true
 Bundle-Vendor: openHAB
 Bundle-Version: 2.4.0.qualifier
 Import-Package: 
- javax.measure;version="1.0.0",
- javax.measure.quantity;version="1.0.0",
+ javax.measure,
+ javax.measure.quantity,
  org.apache.commons.lang,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.eclipse.smarthome.config.core,
@@ -29,5 +29,5 @@ Import-Package:
  org.eclipse.smarthome.core.util,
  org.osgi.framework,
  org.slf4j,
- tec.uom.se.format;version="1.0.8"
+ tec.uom.se.format
 Service-Component: OSGI-INF/*.xml

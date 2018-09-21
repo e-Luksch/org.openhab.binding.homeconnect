@@ -112,32 +112,32 @@
 			</parameter>
 		</config-description>
 	</thing-type>
-	
+
 	<!-- Dryer -->
-    <thing-type id="dryer">
-        <supported-bridge-type-refs>
-            <bridge-type-ref id="api_bridge" />
-        </supported-bridge-type-refs>
-        <label>Dryer</label>
-        <description>Home Connect connected dryer (e.g. Bosch or Siemens).</description>
-        <channels>
-            <channel id="door_state" typeId="door_state" />
-            <channel id="operation_state" typeId="operation_state" />
-            <channel id="remote_start_allowance_state" typeId="remote_start_allowance_state" />
-            <channel id="remote_control_active_state" typeId="remote_control_active_state" />
-            <channel id="active_program_state" typeId="active_program_state" />
-            <channel id="selected_program_state" typeId="selected_program_state" />
-            <channel id="dryer_drying_target" typeId="dryer_drying_target" />
-            <channel id="remaining_program_time_state" typeId="remaining_program_time_state" />
-            <channel id="program_progress_state" typeId="program_progress_state" />
-        </channels>
-        <config-description>
-            <parameter name="haId" type="text" required="true">
-                <label>haId</label>
-                <description>Unique identifier representing a specific home appliance.</description>
-            </parameter>
-        </config-description>
-    </thing-type>   
+	<thing-type id="dryer">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="api_bridge" />
+		</supported-bridge-type-refs>
+		<label>Dryer</label>
+		<description>Home Connect connected dryer (e.g. Bosch or Siemens).</description>
+		<channels>
+			<channel id="door_state" typeId="door_state" />
+			<channel id="operation_state" typeId="operation_state" />
+			<channel id="remote_start_allowance_state" typeId="remote_start_allowance_state" />
+			<channel id="remote_control_active_state" typeId="remote_control_active_state" />
+			<channel id="active_program_state" typeId="active_program_state" />
+			<channel id="selected_program_state" typeId="selected_program_state" />
+			<channel id="dryer_drying_target" typeId="dryer_drying_target" />
+			<channel id="remaining_program_time_state" typeId="remaining_program_time_state" />
+			<channel id="program_progress_state" typeId="program_progress_state" />
+		</channels>
+		<config-description>
+			<parameter name="haId" type="text" required="true">
+				<label>haId</label>
+				<description>Unique identifier representing a specific home appliance.</description>
+			</parameter>
+		</config-description>
+	</thing-type>
 
 	<!-- Fridge Freezer -->
 	<thing-type id="fridgefreezer">
@@ -291,10 +291,10 @@
 			a timeout.</description>
 		<state readOnly="true" />
 	</channel-type>
-    <channel-type id="dryer_drying_target">
-        <item-type>String</item-type>
-        <label>Drying target</label>
-        <description>Specifies the desired dryness setting.</description>
-        <state readOnly="true" />
-    </channel-type>	
+	<channel-type id="dryer_drying_target">
+		<item-type>String</item-type>
+		<label>Drying target</label>
+		<description>Specifies the desired dryness setting.</description>
+		<state readOnly="true" />
+	</channel-type>
 </thing:thing-descriptions>

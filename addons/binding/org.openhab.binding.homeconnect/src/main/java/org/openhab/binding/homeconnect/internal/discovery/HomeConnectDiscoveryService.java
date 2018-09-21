@@ -24,10 +24,10 @@ import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BridgeHandler;
-import org.openhab.binding.homeconnect.handler.HomeConnectBridgeHandler;
 import org.openhab.binding.homeconnect.internal.client.HomeConnectApiClient;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.client.model.HomeAppliance;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectBridgeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

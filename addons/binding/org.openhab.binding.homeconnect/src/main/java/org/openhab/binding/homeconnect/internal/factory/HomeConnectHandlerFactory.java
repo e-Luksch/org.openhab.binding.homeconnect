@@ -6,7 +6,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.homeconnect.handler;
+package org.openhab.binding.homeconnect.internal.factory;
 
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
@@ -25,6 +25,12 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.homeconnect.internal.discovery.HomeConnectDiscoveryService;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectBridgeHandler;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectDishwasherHandler;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectDryerHandler;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectFridgeFreezerHandler;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectOvenHandler;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectWasherHandler;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Component;
 

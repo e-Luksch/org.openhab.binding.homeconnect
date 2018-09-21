@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.openhab.binding.homeconnect.handler.HomeConnectBridgeHandler;
 import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.client.exception.InvalidTokenException;
@@ -30,6 +29,7 @@ import org.openhab.binding.homeconnect.internal.client.model.Event;
 import org.openhab.binding.homeconnect.internal.client.model.HomeAppliance;
 import org.openhab.binding.homeconnect.internal.client.model.Option;
 import org.openhab.binding.homeconnect.internal.client.model.Program;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectBridgeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

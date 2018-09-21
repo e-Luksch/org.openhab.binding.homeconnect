@@ -6,7 +6,7 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.homeconnect.handler;
+package org.openhab.binding.homeconnect.internal.handler;
 
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
@@ -22,7 +22,6 @@ import org.eclipse.smarthome.core.types.UnDefType;
 import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.client.model.Data;
-import org.openhab.binding.homeconnect.internal.handler.AbstractHomeConnectThingHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
