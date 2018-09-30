@@ -158,20 +158,20 @@ If you prefer to configure everything via file instead of PaperUI, here are some
 
 ```
 // simulator bridge
-Bridge homeconnect:api_bridge:simulator1 "Home Connect API (Simulator)" [ clientId="xyz", simulator=true] {
+Bridge homeconnect:api_bridge:simulator_api_bridge "Home Connect API (Simulator)" [ clientId="1234", simulator=true] {
     // Thing configurations
-    Thing homeconnect:dishwasher:dishwasher1 "Dishwasher (Simulator)"  [ haId="SIEMENS-HCS02DWH1-6F2FC400C1EA4A" ]
-    Thing homeconnect:washer:washer1 "Washer (Simulator)"  [ haId="SIEMENS-HCS03WCH1-1F35EC2BE34A0F" ]
-    Thing homeconnect:fridgefreezer:fridge1 "Fridge Freezer (Simulator)"  [ haId="SIEMENS-HCS05FRF1-7B3FA5EB3D885B" ]
-    Thing homeconnect:oven:oven1 "Oven (Simulator)"  [ haId="BOSCH-HCS01OVN1-2132B6FA25BA21" ]
-    Thing homeconnect:dryer:dryer1 "Dryer (Simulator)"  [ haId="BOSCH-HCS04DYR1-3921C766AD5BAF" ]
-    Thing homeconnect:coffeemaker:coffee1 "Coffee machine (Simulator)"  [ haId="BOSCH-HCS06COM1-2140A8821AE7AB" ]
+    Thing dishwasher dishwasher1 "Dishwasher (Simulator)"  [ haId="SIEMENS-HCS02DWH1-6F2FC400C1EA4A" ]
+    Thing washer washer1 "Washer (Simulator)"  [ haId="SIEMENS-HCS03WCH1-1F35EC2BE34A0F" ]
+    Thing fridgefreezer fridge1 "Fridge Freezer (Simulator)"  [ haId="SIEMENS-HCS05FRF1-7B3FA5EB3D885B" ]
+    Thing oven oven1 "Oven (Simulator)"  [ haId="BOSCH-HCS01OVN1-2132B6FA25BA21" ]
+    Thing dryer dryer1 "Dryer (Simulator)"  [ haId="BOSCH-HCS04DYR1-3921C766AD5BAF" ]
+    Thing coffeemaker coffee1 "Coffee machine (Simulator)"  [ haId="BOSCH-HCS06COM1-2140A8821AE7AB" ]
 }
 
 // real device bridge
-Bridge homeconnect:api_bridge:mybridge "Home Connect API" [ clientId="xyz", clientSecret="xyz", refreshToken="xyz", simulator=false] {
+Bridge homeconnect:api_bridge:api_bridge "Home Connect API" [ clientId="1234", clientSecret="1234", refreshToken="1234", simulator=false] {
     // Thing configurations
-    Thing homeconnect:dishwasher:siemensdishwasher "Siemens Dishwasher"  [ haId="SIEMENS-SN658X06TE-12340E1539BF" ]
+    Thing dishwasher siemensdishwasher "Siemens Dishwasher"  [ haId="SIEMENS-SNXXXXXXTE-XXXXXXXXXXBF" ]
 }
 ```
 
