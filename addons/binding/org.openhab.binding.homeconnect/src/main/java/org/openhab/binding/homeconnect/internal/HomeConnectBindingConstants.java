@@ -35,6 +35,7 @@ public class HomeConnectBindingConstants {
     public static final ThingTypeUID THING_TYPE_WASHER = new ThingTypeUID(BINDING_ID, "washer");
     public static final ThingTypeUID THING_TYPE_FRIDGE_FREEZER = new ThingTypeUID(BINDING_ID, "fridgefreezer");
     public static final ThingTypeUID THING_TYPE_DRYER = new ThingTypeUID(BINDING_ID, "dryer");
+    public static final ThingTypeUID THING_TYPE_COFFEE_MAKER = new ThingTypeUID(BINDING_ID, "coffeemaker");
 
     // SSE Event types
     public static final String EVENT_ELAPSED_PROGRAM_TIME = "BSH.Common.Option.ElapsedProgramTime";
@@ -83,13 +84,14 @@ public class HomeConnectBindingConstants {
     public static final String CHANNEL_DRYER_DRYING_TARGET = "dryer_drying_target";
 
     // List of all supported devices
-    public static final Set<ThingTypeUID> SUPPORTED_DEVICE_THING_TYPES_UIDS = Stream.of(THING_TYPE_API_BRIDGE,
-            THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER, THING_TYPE_DRYER, THING_TYPE_FRIDGE_FREEZER)
+    public static final Set<ThingTypeUID> SUPPORTED_DEVICE_THING_TYPES_UIDS = Stream
+            .of(THING_TYPE_API_BRIDGE, THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER, THING_TYPE_DRYER,
+                    THING_TYPE_FRIDGE_FREEZER, THING_TYPE_COFFEE_MAKER)
             .collect(Collectors.toSet());
 
     // Discoverable devices
-    public static final Set<ThingTypeUID> DISCOVERABLE_DEVICE_THING_TYPES_UIDS = Stream
-            .of(THING_TYPE_DISHWASHER, THING_TYPE_OVEN, THING_TYPE_WASHER, THING_TYPE_DRYER, THING_TYPE_FRIDGE_FREEZER)
+    public static final Set<ThingTypeUID> DISCOVERABLE_DEVICE_THING_TYPES_UIDS = Stream.of(THING_TYPE_DISHWASHER,
+            THING_TYPE_OVEN, THING_TYPE_WASHER, THING_TYPE_DRYER, THING_TYPE_FRIDGE_FREEZER, THING_TYPE_COFFEE_MAKER)
             .collect(Collectors.toSet());
 
     // List of state values

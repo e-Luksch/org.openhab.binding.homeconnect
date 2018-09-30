@@ -26,6 +26,7 @@ import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.homeconnect.internal.discovery.HomeConnectDiscoveryService;
 import org.openhab.binding.homeconnect.internal.handler.HomeConnectBridgeHandler;
+import org.openhab.binding.homeconnect.internal.handler.HomeConnectCoffeeMakerHandler;
 import org.openhab.binding.homeconnect.internal.handler.HomeConnectDishwasherHandler;
 import org.openhab.binding.homeconnect.internal.handler.HomeConnectDryerHandler;
 import org.openhab.binding.homeconnect.internal.handler.HomeConnectFridgeFreezerHandler;
@@ -74,6 +75,8 @@ public class HomeConnectHandlerFactory extends BaseThingHandlerFactory {
             return new HomeConnectDryerHandler(thing);
         } else if (THING_TYPE_FRIDGE_FREEZER.equals(thingTypeUID)) {
             return new HomeConnectFridgeFreezerHandler(thing);
+        } else if (THING_TYPE_COFFEE_MAKER.equals(thingTypeUID)) {
+            return new HomeConnectCoffeeMakerHandler(thing);
         }
 
         return null;

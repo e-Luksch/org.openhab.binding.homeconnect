@@ -5,7 +5,7 @@ It uses the Home Connect API to connect to household devices (Bosch and Siemens)
 
 As all status updates and commands have to go through the API, a permanent internet connection is required.
 
-Supported devices: dishwasher, washer, dryer, oven, refrigerator/freezer
+Supported devices: dishwasher, washer, dryer, oven, refrigerator/freezer, coffee machine
 
 ## Supported Things
 
@@ -15,7 +15,7 @@ The __Home Connect API__ is responsible for the communication with the Home Conn
 
 ### Devices
 
-Currently dishwashers, washing machines, dryers, refrigerators/freezers and ovens are supported.
+Currently dishwashers, washing machines, dryers, refrigerators/freezers, coffee machines and ovens are supported.
 
 ## Discovery
 
@@ -28,15 +28,15 @@ After the bridge has been added, devices are discovered automatically.
 | --------------- | ------------ | --------- | ------------ | ------------------ |
 | power_state | Switch | false | This setting describes the current power state of the home appliance. | dishwasher | 
 | power_state_read_only | true | Switch | This setting describes the current power state of the home appliance (read only). | oven | 
-| door_state | Contact | true | This status describes the state of the door of the home appliance. A change of that status is either triggered by the user operating the home appliance locally (i.e. opening/closing door) or automatically by the home appliance (i.e. locking the door). | dishwasher, washer, dryer, oven, refrigerator/freezer | 
-| operation_state | String | true | This status describes the operation state of the home appliance. | dishwasher, washer, dryer, oven | 
-| remote_start_allowance_state | Switch | true  | This status indicates whether the remote program start is enabled. This can happen due to a programmatic change (only disabling), or manually by the user changing the flag locally on the home appliance, or automatically after a certain duration - usually 24 hours. | dishwasher, washer, dryer, oven | 
+| door_state | Contact | true | This status describes the state of the door of the home appliance. A change of that status is either triggered by the user operating the home appliance locally (i.e. opening/closing door) or automatically by the home appliance (i.e. locking the door). | dishwasher, washer, dryer, oven, refrigerator/freezer, coffeemaker | 
+| operation_state | String | true | This status describes the operation state of the home appliance. | dishwasher, washer, dryer, oven, coffeemaker | 
+| remote_start_allowance_state | Switch | true  | This status indicates whether the remote program start is enabled. This can happen due to a programmatic change (only disabling), or manually by the user changing the flag locally on the home appliance, or automatically after a certain duration - usually 24 hours. | dishwasher, washer, dryer, oven, coffeemaker | 
 | remote_control_active_state | Switch | true  | This status indicates whether the allowance for remote controlling is enabled. | dishwasher, washer, dryer, oven | 
-| active_program_state | String | true  | This status describes the active program of the home appliance. | dishwasher, washer, dryer, oven | 
-| selected_program_state | String | true | This status describes the selected program of the home appliance. | dishwasher, washer, dryer, oven | 
+| active_program_state | String | true  | This status describes the active program of the home appliance. | dishwasher, washer, dryer, oven, coffeemaker | 
+| selected_program_state | String | true | This status describes the selected program of the home appliance. | dishwasher, washer, dryer, oven, coffeemaker | 
 | remaining_program_time_state | Number:Time | true | This status indicates the remaining program time of the home appliance. | dishwasher, washer, dryer, oven | 
 | elapsed_program_time | Number:Time | true | This status indicates the elapsed program time of the home appliance. | oven | 
-| program_progress_state | Number:Dimensionless | true | This status describes the program progress of the home appliance. | dishwasher, washer, dryer, oven | 
+| program_progress_state | Number:Dimensionless | true | This status describes the program progress of the home appliance. | dishwasher, washer, dryer, oven, coffeemaker | 
 | duration | Number:Time | true | This status describes the duration of the program of the home appliance. | oven | 
 | current_cavity_temperature | Number:Temperature | true | This status describes the current cavity temperature of the home appliance. | oven | 
 | setpoint_temperature | Number:Temperature | true | This status describes the setpoint/target temperature of the home appliance. | oven | 
@@ -165,6 +165,7 @@ Bridge homeconnect:api_bridge:simulator1 "Home Connect API (Simulator)" [ client
     Thing homeconnect:fridgefreezer:fridge1 "Fridge Freezer (Simulator)"  [ haId="SIEMENS-HCS05FRF1-7B3FA5EB3D885B" ]
     Thing homeconnect:oven:oven1 "Oven (Simulator)"  [ haId="BOSCH-HCS01OVN1-2132B6FA25BA21" ]
     Thing homeconnect:dryer:dryer1 "Dryer (Simulator)"  [ haId="BOSCH-HCS04DYR1-3921C766AD5BAF" ]
+    Thing homeconnect:coffeemaker:coffee1 "Coffee machine (Simulator)"  [ haId="BOSCH-HCS06COM1-2140A8821AE7AB" ]
 }
 
 // real device bridge
@@ -232,6 +233,14 @@ Number:Time            WasherSimulator_RemainingProgramTimeState      "Remaining
 Number:Dimensionless   WasherSimulator_ProgramProgressState           "Progress State"                    {channel="homeconnect:washer:washer1:program_progress_state"}
 String                 WasherSimulator_LaundryCareWasherTemperature   "Washing Program Temperature"       {channel="homeconnect:washer:washer1:laundry_care_washer_temperature"}
 String                 WasherSimulator_LaundryCareWasherSpinSpeed     "Spin Speed"                        {channel="homeconnect:washer:washer1:laundry_care_washer_spin_speed"}
+
+// coffee machine
+Contact                BOSCHCoffeeMakerSimulatorBOSCHHCS06COM12140A8821AE7AB_DoorState                   "Door State"                     {channel="homeconnect:CoffeeMaker:BOSCH-HCS06COM1-2140A8821AE7AB:door_state"}
+String                 BOSCHCoffeeMakerSimulatorBOSCHHCS06COM12140A8821AE7AB_OperationState              "Operation State"                {channel="homeconnect:CoffeeMaker:BOSCH-HCS06COM1-2140A8821AE7AB:operation_state"}
+Switch                 BOSCHCoffeeMakerSimulatorBOSCHHCS06COM12140A8821AE7AB_RemoteStartAllowanceState   "Remote Start Allowance State"   {channel="homeconnect:CoffeeMaker:BOSCH-HCS06COM1-2140A8821AE7AB:remote_start_allowance_state"}
+String                 BOSCHCoffeeMakerSimulatorBOSCHHCS06COM12140A8821AE7AB_SelectedProgramState        "Selected Program"               {channel="homeconnect:CoffeeMaker:BOSCH-HCS06COM1-2140A8821AE7AB:selected_program_state"}
+String                 BOSCHCoffeeMakerSimulatorBOSCHHCS06COM12140A8821AE7AB_ActiveProgramState          "Active Program"                 {channel="homeconnect:CoffeeMaker:BOSCH-HCS06COM1-2140A8821AE7AB:active_program_state"}
+Number:Dimensionless   BOSCHCoffeeMakerSimulatorBOSCHHCS06COM12140A8821AE7AB_ProgramProgressState        "Progress State"                 {channel="homeconnect:CoffeeMaker:BOSCH-HCS06COM1-2140A8821AE7AB:program_progress_state"}
 ```
 
 

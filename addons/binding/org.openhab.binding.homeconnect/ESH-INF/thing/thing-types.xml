@@ -144,7 +144,7 @@
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="api_bridge" />
 		</supported-bridge-type-refs>
-		<label>Refrigerator/Freezer</label>
+		<label>Refrigerator / Freezer</label>
 		<description>Home Connect connected refrigerator/freezer (e.g. Bosch or Siemens).</description>
 		<channels>
 			<channel id="door_state" typeId="door_state" />
@@ -152,6 +152,29 @@
 			<channel id="super_mode_refrigerator" typeId="super_mode_refrigerator" />
 			<channel id="setpoint_temperature_freezer" typeId="setpoint_temperature_freezer" />
 			<channel id="super_mode_freezer" typeId="super_mode_freezer" />
+		</channels>
+		<config-description>
+			<parameter name="haId" type="text" required="true">
+				<label>haId</label>
+				<description>Unique identifier representing a specific home appliance.</description>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<!-- Coffee Machine -->
+	<thing-type id="coffeemaker">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="api_bridge" />
+		</supported-bridge-type-refs>
+		<label>Coffee Machine</label>
+		<description>Home Connect connected coffee machine (e.g. Bosch or Siemens).</description>
+		<channels>
+			<channel id="door_state" typeId="door_state" />
+			<channel id="operation_state" typeId="operation_state" />
+			<channel id="remote_start_allowance_state" typeId="remote_start_allowance_state" />
+			<channel id="selected_program_state" typeId="selected_program_state" />
+			<channel id="active_program_state" typeId="active_program_state" />
+			<channel id="program_progress_state" typeId="program_progress_state" />
 		</channels>
 		<config-description>
 			<parameter name="haId" type="text" required="true">
@@ -266,13 +289,15 @@
 	<channel-type id="setpoint_temperature_refridgerator">
 		<item-type>Number:Temperature</item-type>
 		<label>Refrigerator temperature</label>
-		<description>Target temperature of the refrigerator compartment (Range depends on appliance - common range 2 to 8°C).</description>
+		<description>Target temperature of the refrigerator compartment (Range depends on appliance - common range 2 to 8°C).
+		</description>
 		<state step="1" pattern="%.0f %unit%" readOnly="false"></state>
 	</channel-type>
 	<channel-type id="setpoint_temperature_freezer">
 		<item-type>Number:Temperature</item-type>
 		<label>Freezer temperature</label>
-		<description>Target temperature of the freezer compartment (Range depends on appliance - common range -16 to -24°C).</description>
+		<description>Target temperature of the freezer compartment (Range depends on appliance - common range -16 to -24°C).
+		</description>
 		<state step="1" pattern="%.0f %unit%" readOnly="false"></state>
 	</channel-type>
 	<channel-type id="super_mode_refrigerator">
@@ -288,7 +313,8 @@
 		<label>Freezer super mode</label>
 		<description>This setting has no impact on setpoint temperatures but will make the freezer compartment cool to the
 			lowest possible temperature until it is disabled by the manually by the customer or by the home appliance because of
-			a timeout.</description>
+			a timeout.
+		</description>
 		<state readOnly="true" />
 	</channel-type>
 	<channel-type id="dryer_drying_target">
