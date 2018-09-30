@@ -150,4 +150,88 @@ The Home Connect developer site allows you to use simulated appliances. You can 
         * __refresh token:__ leave blank
     3. That's it! Now you can use autodiscovery to add devices.
 
+## Examples: File based configuration
+
+If you prefer to configure everything via file instead of PaperUI, here are some examples.
+
+### things/homeconnect.things
+
+```
+// simulator bridge
+Bridge homeconnect:api_bridge:simulator1 "Home Connect API (Simulator)" [ clientId="xyz", simulator=true] {
+    // Thing configurations
+    Thing homeconnect:dishwasher:dishwasher1 "Dishwasher (Simulator)"  [ haId="SIEMENS-HCS02DWH1-6F2FC400C1EA4A" ]
+    Thing homeconnect:washer:washer1 "Washer (Simulator)"  [ haId="SIEMENS-HCS03WCH1-1F35EC2BE34A0F" ]
+    Thing homeconnect:fridgefreezer:fridge1 "Fridge Freezer (Simulator)"  [ haId="SIEMENS-HCS05FRF1-7B3FA5EB3D885B" ]
+    Thing homeconnect:oven:oven1 "Oven (Simulator)"  [ haId="BOSCH-HCS01OVN1-2132B6FA25BA21" ]
+    Thing homeconnect:dryer:dryer1 "Dryer (Simulator)"  [ haId="BOSCH-HCS04DYR1-3921C766AD5BAF" ]
+}
+
+// real device bridge
+Bridge homeconnect:api_bridge:mybridge "Home Connect API" [ clientId="xyz", clientSecret="xyz", refreshToken="xyz", simulator=false] {
+    // Thing configurations
+    Thing homeconnect:dishwasher:siemensdishwasher "Siemens Dishwasher"  [ haId="SIEMENS-SN658X06TE-12340E1539BF" ]
+}
+```
+
+### items/homeconnect.items
+
+```
+// dishwasher
+Switch                 DishwasherSimulator_PowerState                  "Power State"                       {channel="homeconnect:dishwasher:dishwasher1:power_state"}
+Contact                DishwasherSimulator_DoorState                   "Door State"                        {channel="homeconnect:dishwasher:dishwasher1:door_state"}
+String                 DishwasherSimulator_OperationState              "Operation State"                   {channel="homeconnect:dishwasher:dishwasher1:operation_state"}
+Switch                 DishwasherSimulator_RemoteStartAllowanceState   "Remote Start Allowance State"      {channel="homeconnect:dishwasher:dishwasher1:remote_start_allowance_state"}
+Switch                 DishwasherSimulator_RemoteControlActiveState    "Remote Control Activation State"   {channel="homeconnect:dishwasher:dishwasher1:remote_control_active_state"}
+String                 DishwasherSimulator_SelectedProgramState        "Selected Program"                  {channel="homeconnect:dishwasher:dishwasher1:selected_program_state"}
+String                 DishwasherSimulator_ActiveProgramState          "Active Program"                    {channel="homeconnect:dishwasher:dishwasher1:active_program_state"}
+Number:Time            DishwasherSimulator_RemainingProgramTimeState   "Remaining program time"            {channel="homeconnect:dishwasher:dishwasher1:remaining_program_time_state"}
+Number:Dimensionless   DishwasherSimulator_ProgramProgressState        "Progress State"                    {channel="homeconnect:dishwasher:dishwasher1:program_progress_state"}
+
+// dryer
+Contact                DryerSimulator_DoorState                   "Door State"                        {channel="homeconnect:dryer:dryer1:door_state"}
+String                 DryerSimulator_OperationState              "Operation State"                   {channel="homeconnect:dryer:dryer1:operation_state"}
+Switch                 DryerSimulator_RemoteStartAllowanceState   "Remote Start Allowance State"      {channel="homeconnect:dryer:dryer1:remote_start_allowance_state"}
+Switch                 DryerSimulator_RemoteControlActiveState    "Remote Control Activation State"   {channel="homeconnect:dryer:dryer1:remote_control_active_state"}
+String                 DryerSimulator_ActiveProgramState          "Active Program"                    {channel="homeconnect:dryer:dryer1:active_program_state"}
+String                 DryerSimulator_SelectedProgramState        "Selected Program"                  {channel="homeconnect:dryer:dryer1:selected_program_state"}
+String                 DryerSimulator_DryerDryingTarget           "Drying target"                     {channel="homeconnect:dryer:dryer1:dryer_drying_target"}
+Number:Time            DryerSimulator_RemainingProgramTimeState   "Remaining program time"            {channel="homeconnect:dryer:dryer1:remaining_program_time_state"}
+Number:Dimensionless   DryerSimulator_ProgramProgressState        "Progress State"                    {channel="homeconnect:dryer:dryer1:program_progress_state"}
+
+// fridge/freezer
+Contact              FridgeFreezerSimulator_DoorState                          "Door State"                 {channel="homeconnect:fridgefreezer:fridge1:door_state"}
+Number:Temperature   FridgeFreezerSimulator_SetpointTemperatureRefridgerator   "Refrigerator temperature"   {channel="homeconnect:fridgefreezer:fridge1:setpoint_temperature_refridgerator"}
+Switch               FridgeFreezerSimulator_SuperModeRefrigerator              "Refrigerator super mode"    {channel="homeconnect:fridgefreezer:fridge1:super_mode_refrigerator"}
+Number:Temperature   FridgeFreezerSimulator_SetpointTemperatureFreezer         "Freezer temperature"        {channel="homeconnect:fridgefreezer:fridge1:setpoint_temperature_freezer"}
+Switch               FridgeFreezerSimulator_SuperModeFreezer                   "Freezer super mode"         {channel="homeconnect:fridgefreezer:fridge1:super_mode_freezer"}
+
+// oven
+Switch                 OvenSimulator_PowerState                     "Power State"                       {channel="homeconnect:oven:oven1:power_state"}
+Contact                OvenSimulator_DoorState                      "Door State"                        {channel="homeconnect:oven:oven1:door_state"}
+String                 OvenSimulator_OperationState                 "Operation State"                   {channel="homeconnect:oven:oven1:operation_state"}
+Switch                 OvenSimulator_RemoteStartAllowanceState      "Remote Start Allowance State"      {channel="homeconnect:oven:oven1:remote_start_allowance_state"}
+Switch                 OvenSimulator_RemoteControlActiveState       "Remote Control Activation State"   {channel="homeconnect:oven:oven1:remote_control_active_state"}
+String                 OvenSimulator_ActiveProgramState             "Active Program"                    {channel="homeconnect:oven:oven1:active_program_state"}
+String                 OvenSimulator_SelectedProgramState           "Selected Program"                  {channel="homeconnect:oven:oven1:selected_program_state"}
+Number:Time            OvenSimulator_RemainingProgramTimeState      "Remaining program time"            {channel="homeconnect:oven:oven1:remaining_program_time_state"}
+Number:Dimensionless   OvenSimulator_ProgramProgressState           "Progress State"                    {channel="homeconnect:oven:oven1:program_progress_state"}
+Number:Temperature     OvenSimulator_OvenCurrentCavityTemperature   "Cavity Temperature"                {channel="homeconnect:oven:oven1:oven_current_cavity_temperature"}
+Number:Time            OvenSimulator_ElapsedProgramTime             "Elapsed Program Time"              {channel="homeconnect:oven:oven1:elapsed_program_time"}
+Number:Temperature     OvenSimulator_SetpointTemperature            "Setpoint Temperature"              {channel="homeconnect:oven:oven1:setpoint_temperature"}
+Number:Time            OvenSimulator_Duration                       "Selected duration"                 {channel="homeconnect:oven:oven1:duration"}
+
+// washer
+Contact                WasherSimulator_DoorState                      "Door State"                        {channel="homeconnect:washer:washer1:door_state"}
+String                 WasherSimulator_OperationState                 "Operation State"                   {channel="homeconnect:washer:washer1:operation_state"}
+Switch                 WasherSimulator_RemoteStartAllowanceState      "Remote Start Allowance State"      {channel="homeconnect:washer:washer1:remote_start_allowance_state"}
+Switch                 WasherSimulator_RemoteControlActiveState       "Remote Control Activation State"   {channel="homeconnect:washer:washer1:remote_control_active_state"}
+String                 WasherSimulator_ActiveProgramState             "Active Program"                    {channel="homeconnect:washer:washer1:active_program_state"}
+String                 WasherSimulator_SelectedProgramState           "Selected Program"                  {channel="homeconnect:washer:washer1:selected_program_state"}
+Number:Time            WasherSimulator_RemainingProgramTimeState      "Remaining program time"            {channel="homeconnect:washer:washer1:remaining_program_time_state"}
+Number:Dimensionless   WasherSimulator_ProgramProgressState           "Progress State"                    {channel="homeconnect:washer:washer1:program_progress_state"}
+String                 WasherSimulator_LaundryCareWasherTemperature   "Washing Program Temperature"       {channel="homeconnect:washer:washer1:laundry_care_washer_temperature"}
+String                 WasherSimulator_LaundryCareWasherSpinSpeed     "Spin Speed"                        {channel="homeconnect:washer:washer1:laundry_care_washer_spin_speed"}
+```
+
 
