@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -82,7 +83,13 @@ public class HomeConnectBridgeHandler extends BaseBridgeHandler {
 
         // initialize api client
         apiClient = new HomeConnectApiClient(config.getClientId(), config.getClientSecret(), config.getRefreshToken(),
-                config.isSimulator());
+                config.isSimulator(), newRefreshToken -> {
+                    Configuration configuration = editConfiguration();
+                    logger.info("Refresh token was updated. Old token: " + configuration.get("refreshToken")
+                            + " New token: " + newRefreshToken);
+                    configuration.put("refreshToken", newRefreshToken);
+                    updateConfiguration(configuration);
+                });
 
         try {
             if (apiClient.getHomeAppliances() != null) {

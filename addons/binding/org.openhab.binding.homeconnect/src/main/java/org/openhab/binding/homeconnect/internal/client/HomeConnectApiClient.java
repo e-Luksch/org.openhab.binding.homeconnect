@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
 import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
@@ -29,7 +30,6 @@ import org.openhab.binding.homeconnect.internal.client.model.Event;
 import org.openhab.binding.homeconnect.internal.client.model.HomeAppliance;
 import org.openhab.binding.homeconnect.internal.client.model.Option;
 import org.openhab.binding.homeconnect.internal.client.model.Program;
-import org.openhab.binding.homeconnect.internal.handler.HomeConnectBridgeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,14 +68,15 @@ public class HomeConnectApiClient {
     private final static String AUTH_SCOPE = "scope";
     private final static String AUTH_CODE_GRAND_SCOPE_VALUE = "IdentifyAppliance Monitor Settings";
     private final static int SSE_REQUEST_READ_TIMEOUT = 90;
-    private final static int REQUEST_READ_TIMEOUT = 30; // TODO
+    private final static int REQUEST_READ_TIMEOUT = 30;
 
-    private final Logger logger = LoggerFactory.getLogger(HomeConnectBridgeHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(HomeConnectApiClient.class);
     private OkHttpClient client;
     private String apiUrl;
 
     private String clientId, clientSecret, token, refreshToken;
     private boolean simulated;
+    private Consumer<String> newRefreshTokenFunction;
 
     private final Set<ServerSentEventListener> eventListeners;
     private final HashMap<String, ServerSentEvent> serverSentEvent;
@@ -83,11 +84,17 @@ public class HomeConnectApiClient {
     private OkSse oksse;
 
     public HomeConnectApiClient(String clientId, String clientSecret, String refreshToken, boolean simulated) {
+        this(clientId, clientSecret, refreshToken, simulated, null);
+    }
+
+    public HomeConnectApiClient(String clientId, String clientSecret, String refreshToken, boolean simulated,
+            Consumer<String> newRefreshTokenFunction) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.token = null;
         this.refreshToken = refreshToken;
         this.simulated = simulated;
+        this.newRefreshTokenFunction = newRefreshTokenFunction;
 
         eventListeners = ConcurrentHashMap.newKeySet();
         serverSentEvent = new HashMap<>();
@@ -745,6 +752,9 @@ public class HomeConnectApiClient {
 
             JsonObject responseObject = new JsonParser().parse(responseBody).getAsJsonObject();
             token = responseObject.get("access_token").getAsString();
+            if (newRefreshTokenFunction != null) {
+                newRefreshTokenFunction.accept(responseObject.get("refresh_token").getAsString());
+            }
         } catch (IOException e) {
             logger.error("Error accured while communicating with API!");
             throw new CommunicationException(e);
