@@ -753,7 +753,9 @@ public class HomeConnectApiClient {
             JsonObject responseObject = new JsonParser().parse(responseBody).getAsJsonObject();
             token = responseObject.get("access_token").getAsString();
             if (newRefreshTokenFunction != null) {
-                newRefreshTokenFunction.accept(responseObject.get("refresh_token").getAsString());
+                refreshToken = responseObject.get("refresh_token").getAsString();
+                newRefreshTokenFunction.accept(refreshToken);
+
             }
         } catch (IOException e) {
             logger.error("Error accured while communicating with API!");
