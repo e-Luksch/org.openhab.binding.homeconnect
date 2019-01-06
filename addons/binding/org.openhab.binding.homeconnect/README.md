@@ -27,7 +27,7 @@ After the bridge has been added, devices are discovered automatically.
 | Channel Type ID | Item Type    | Read only | Description  | Available on thing |
 | --------------- | ------------ | --------- | ------------ | ------------------ |
 | power_state | Switch | false | This setting describes the current power state of the home appliance. | dishwasher | 
-| power_state_read_only | true | Switch | This setting describes the current power state of the home appliance (read only). | oven | 
+| power_state_read_only | Switch | true | This setting describes the current power state of the home appliance (read only). | oven | 
 | door_state | Contact | true | This status describes the state of the door of the home appliance. A change of that status is either triggered by the user operating the home appliance locally (i.e. opening/closing door) or automatically by the home appliance (i.e. locking the door). | dishwasher, washer, dryer, oven, refrigerator/freezer, coffeemaker | 
 | operation_state | String | true | This status describes the operation state of the home appliance. | dishwasher, washer, dryer, oven, coffeemaker | 
 | remote_start_allowance_state | Switch | true  | This status indicates whether the remote program start is enabled. This can happen due to a programmatic change (only disabling), or manually by the user changing the flag locally on the home appliance, or automatically after a certain duration - usually 24 hours. | dishwasher, washer, dryer, oven, coffeemaker | 

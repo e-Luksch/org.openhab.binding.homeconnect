@@ -169,6 +169,7 @@
 		<label>Coffee Machine</label>
 		<description>Home Connect connected coffee machine (e.g. Bosch or Siemens).</description>
 		<channels>
+		    <channel id="power_state" typeId="power_state" />
 			<channel id="door_state" typeId="door_state" />
 			<channel id="operation_state" typeId="operation_state" />
 			<channel id="remote_start_allowance_state" typeId="remote_start_allowance_state" />

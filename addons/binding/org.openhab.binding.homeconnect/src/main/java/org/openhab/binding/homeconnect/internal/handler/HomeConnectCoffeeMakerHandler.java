@@ -12,10 +12,15 @@ import static org.eclipse.smarthome.core.library.unit.SmartHomeUnits.PERCENT;
 import static org.openhab.binding.homeconnect.internal.HomeConnectBindingConstants.*;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.types.StringType;
+import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
+import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.UnDefType;
+import org.openhab.binding.homeconnect.internal.client.exception.CommunicationException;
+import org.openhab.binding.homeconnect.internal.client.exception.ConfigurationException;
 import org.openhab.binding.homeconnect.internal.client.model.Program;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +30,7 @@ import org.slf4j.LoggerFactory;
  * sent to one of the channels of a coffee machine.
  *
  * @author Jonas Brüstel - Initial contribution
+ * @author Lukas Werner
  */
 @NonNullByDefault
 public class HomeConnectCoffeeMakerHandler extends AbstractHomeConnectThingHandler {
@@ -54,6 +60,7 @@ public class HomeConnectCoffeeMakerHandler extends AbstractHomeConnectThingHandl
                 }
             });
         });
+        registerEventHandler(EVENT_POWER_STATE, defaultPowerStateEventHandler());
         registerEventHandler(EVENT_PROGRAM_PROGRESS, defaultProgramProgressEventHandler());
         registerEventHandler(EVENT_SELECTED_PROGRAM, defaultSelectedProgramStateEventHandler());
 
@@ -68,7 +75,20 @@ public class HomeConnectCoffeeMakerHandler extends AbstractHomeConnectThingHandl
             updateChannels();
         });
 
+        registerEventHandler(EVENT_POWER_STATE, event -> {
+            getThingChannel(CHANNEL_POWER_STATE).ifPresent(channel -> updateState(channel.getUID(),
+                    STATE_POWER_ON.equals(event.getValue()) ? OnOffType.ON : OnOffType.OFF));
+
+            if (!STATE_POWER_ON.equals(event.getValue())) {
+                resetProgramStateChannels();
+                getThingChannel(CHANNEL_SELECTED_PROGRAM_STATE).ifPresent(c -> updateState(c.getUID(), UnDefType.NULL));
+                getThingChannel(CHANNEL_ACTIVE_PROGRAM_STATE).ifPresent(c -> updateState(c.getUID(), UnDefType.NULL));
+            }
+
+        });
+
         // register update handlers
+        registerChannelUpdateHandler(CHANNEL_POWER_STATE, defaultPowerStateChannelUpdateHandler());
         registerChannelUpdateHandler(CHANNEL_REMOTE_START_ALLOWANCE_STATE,
                 defaultRemoteStartAllowanceChannelUpdateHandler());
         registerChannelUpdateHandler(CHANNEL_DOOR_STATE, defaultDoorStateChannelUpdateHandler());
@@ -104,8 +124,29 @@ public class HomeConnectCoffeeMakerHandler extends AbstractHomeConnectThingHandl
     }
 
     @Override
+    public void handleCommand(ChannelUID channelUID, Command command) {
+        super.handleCommand(channelUID, command);
+
+        if (command instanceof OnOffType && CHANNEL_POWER_STATE.equals(channelUID.getId())) {
+            try {
+                // turn coffeemaker on and off
+                getClient().setPowerState(getThingHaId(),
+                        OnOffType.ON.equals(command) ? STATE_POWER_ON : STATE_POWER_STANDBY);
+            } catch (ConfigurationException | CommunicationException e) {
+                logger.error("API communication problem!", e);
+            }
+        }
+    }
+
+    @Override
     public String toString() {
         return "HomeConnectCoffeeMakerHandler [haId: " + getThingHaId() + "]";
+    }
+
+    @Override
+    protected void powerStateOffCleanup() {
+        logger.debug("ProgramStates will be resettet, during power-off");
+        resetProgramStateChannels();
     }
 
     private void resetProgramStateChannels() {

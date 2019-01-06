@@ -283,7 +283,7 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
 
     /**
      * Map unit string (returned by home connect api) to Unit
-     * 
+     *
      * @param unit String eg. "°C"
      * @return Unit
      */
@@ -338,6 +338,10 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
         return event -> {
             getThingChannel(CHANNEL_POWER_STATE).ifPresent(channel -> updateState(channel.getUID(),
                     STATE_POWER_ON.equals(event.getValue()) ? OnOffType.ON : OnOffType.OFF));
+
+            if (!STATE_POWER_ON.equals(event.getValue())) {
+                this.powerStateOffCleanup();
+            }
         };
     }
 
@@ -441,6 +445,10 @@ public abstract class AbstractHomeConnectThingHandler extends BaseThingHandler i
                 updateState(channelUID, UnDefType.NULL);
             }
         };
+    }
+
+    protected void powerStateOffCleanup() {
+        logger.debug("No Cleanup after powerStateOff defined");
     }
 
     protected interface EventHandler {
